@@ -34,8 +34,16 @@
     --title-color: #888888;
     --text-hint: #666666;
     --select-bg: #2b2b2b;
-    --bad-color: #be3b3b;
-    --ok-color: #4fd1c5;
+    --bad-color: rgba(235, 75, 75, 0.8);
+    --ok-color: rgba(85, 214, 110, 0.7);
+    --bad-glow-filter: none;
+    --ok-glow-filter: none;
+    --ok-text-glow: none;
+    --bad-text-glow: none;
+    --ok-box-glow: none;
+    --bad-box-glow: none;
+    --badge-ok: rgba(85, 214, 110, 0.7);
+    --badge-bad: rgba(235, 75, 75, 0.8);
   }
 
   [data-theme="1"] {
@@ -66,8 +74,16 @@
     --title-color: #7d7d7d;
     --text-hint: #5c5c5c;
     --select-bg: #2a2a2a;
-    --bad-color: #be3b3b;
-    --ok-color: #4fd1c5;
+    --bad-color: rgba(235, 75, 75, 0.8);
+    --ok-color: rgba(85, 214, 110, 0.7);
+    --bad-glow-filter: none;
+    --ok-glow-filter: none;
+    --ok-text-glow: none;
+    --bad-text-glow: none;
+    --ok-box-glow: none;
+    --bad-box-glow: none;
+    --badge-ok: rgba(85, 214, 110, 0.7);
+    --badge-bad: rgba(235, 75, 75, 0.8);
   }
 
   [data-theme="3"] {
@@ -98,8 +114,16 @@
     --title-color: #f59e0b;
     --text-hint: #516075;
     --select-bg: #181f2c;
-    --bad-color: #be3b3b;
-    --ok-color: #4fd1c5;
+    --bad-color: rgba(235, 75, 75, 0.8);
+    --ok-color: rgba(85, 214, 110, 0.7);
+    --bad-glow-filter: none;
+    --ok-glow-filter: none;
+    --ok-text-glow: none;
+    --bad-text-glow: none;
+    --ok-box-glow: none;
+    --bad-box-glow: none;
+    --badge-ok: rgba(85, 214, 110, 0.7);
+    --badge-bad: rgba(235, 75, 75, 0.8);
   }
 
   [data-theme="4"] {
@@ -130,8 +154,30 @@
     --title-color: #f59e0b;
     --text-hint: #666666;
     --select-bg: #2b2b2b;
-    --bad-color: #be3b3b;
-    --ok-color: #4fd1c5;
+    --bad-color: rgba(235, 75, 75, 0.8);
+    --ok-color: rgba(85, 214, 110, 0.7);
+    --bad-glow-filter: none;
+    --ok-glow-filter: none;
+    --ok-text-glow: none;
+    --bad-text-glow: none;
+    --ok-box-glow: none;
+    --bad-box-glow: none;
+    --badge-ok: rgba(85, 214, 110, 0.7);
+    --badge-bad: rgba(235, 75, 75, 0.8);
+  }
+
+  /* colormode: neon — цвета и свечение подписей нот, скопировано 1 в 1 из гуслей */
+  html[data-colormode="neon"], body[data-colormode="neon"]{
+    --bad-color: #eb4b4b;
+    --ok-color: #55d66e;
+    --bad-glow-filter: none;
+    --ok-glow-filter: none;
+    --ok-text-glow: 0 0 2px rgba(85, 214, 110, 0.9), 0 0 8px rgba(85, 214, 110, 0.55), 0 0 16px rgba(85, 214, 110, 0.3);
+    --bad-text-glow: 0 0 2px rgba(235, 75, 75, 0.9), 0 0 8px rgba(235, 75, 75, 0.55), 0 0 16px rgba(235, 75, 75, 0.3);
+    --ok-box-glow: 0 0 6px rgba(85, 214, 110, 0.35), inset 0 0 8px rgba(85, 214, 110, 0.15);
+    --bad-box-glow: 0 0 6px rgba(235, 75, 75, 0.35), inset 0 0 8px rgba(235, 75, 75, 0.15);
+    --badge-ok: #55d66e;
+    --badge-bad: #eb4b4b;
   }
 
   * {
@@ -164,7 +210,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 540px;
+    width: 620px;
     max-height: 90vh;
     overflow-y: auto;
     background-color: var(--panel-bg);
@@ -182,7 +228,7 @@
   .menu-panel.right-panel {
     position: fixed;
     top: 50%;
-    left: calc(50% + 285px);
+    left: calc(50% + 325px);
     width: 540px;
     max-height: 90vh;
     overflow-y: auto;
@@ -347,6 +393,7 @@
   .theme-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     font-size: 12px;
     color: var(--text-muted);
@@ -356,6 +403,12 @@
     flex: none;
     width: auto;
     padding: 6px 10px;
+  }
+
+  .colormode-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .text-btn {
@@ -380,7 +433,7 @@
 
   .toggle-chip {
     background-color: var(--chip-bg);
-    border: 1px solid var(--chip-border);
+    border: 2px solid var(--chip-border);
     color: var(--chip-text);
     padding: 8px 2px;
     border-radius: 6px;
@@ -416,18 +469,30 @@
     font-weight: 600;
   }
 
-  .toggle-chip.correct {
-    background-color: rgba(79,209,197,0.15);
-    border-color: var(--ok-color);
-    color: var(--ok-color);
-    font-weight: 600;
+  .toggle-chip.correct,
+  #pianoAnswer .toggle-chip.correct,
+  #chipAnswer .toggle-chip.correct,
+  #octaveAnswerRow .toggle-chip.correct {
+    background-color: var(--chip-bg) !important;
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: var(--ok-color) !important;
+    color: var(--ok-color) !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
   }
 
-  .toggle-chip.incorrect {
-    background-color: rgba(190,59,59,0.15);
-    border-color: var(--bad-color);
-    color: var(--bad-color);
-    font-weight: 600;
+  .toggle-chip.incorrect,
+  #pianoAnswer .toggle-chip.incorrect,
+  #chipAnswer .toggle-chip.incorrect,
+  #octaveAnswerRow .toggle-chip.incorrect {
+    background-color: var(--chip-bg) !important;
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: var(--bad-color) !important;
+    color: var(--bad-color) !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
   }
 
   .toggle-chip.disabled {
@@ -479,17 +544,51 @@
     top: 0;
   }
 
+  .answer-group-box {
+    width: 100%;
+    background: transparent;
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+  }
+
   .answer-chip-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
+    width: 100%;
   }
 
   .answer-chip-grid .toggle-chip {
     width: auto;
-    padding: 10px 16px;
-    font-size: 13px;
+    padding: 10px 4px;
+    font-size: 12px;
+    text-align: center;
+    flex-grow: 1;
+  }
+
+  /* Размеры кнопок в окне ответа (перенесено из макета) */
+  .answer-chip-grid.mode-intervals .toggle-chip { flex-basis: 45%; min-width: 120px; }
+  .answer-chip-grid.mode-chords .toggle-chip { flex-basis: 22%; min-width: 65px; }
+
+  .answer-octaves-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .answer-octaves-row .toggle-chip {
+    flex-basis: 12%;
+    min-width: 35px;
+    width: auto;
+    padding: 10px 4px;
+    font-size: 12px;
+    text-align: center;
+    flex-grow: 1;
   }
 
   .segmented-control {
@@ -671,21 +770,26 @@
   .feedback-icon {
     width: 100px;
     height: 100px;
-    display: block;
-    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'PT Serif', serif;
+    font-weight: 700;
+    font-size: 85px;
+    line-height: 1;
     color: var(--text-hint);
     opacity: 0.35;
     transition: color 0.2s ease, opacity 0.2s ease;
   }
 
   .feedback-icon.state-correct {
-    color: var(--ok-color);
-    opacity: 1;
+    color: var(--badge-ok);
+    opacity: 0.7;
   }
 
   .feedback-icon.state-incorrect {
-    color: var(--bad-color);
-    opacity: 1;
+    color: var(--badge-bad);
+    opacity: 0.7;
   }
 
   .feedback-hint {
@@ -732,6 +836,7 @@
     border-radius: 4px;
     color: #e1e1e1;
   }
+
 </style>
 </head>
 <body data-theme="2">
@@ -743,10 +848,7 @@
       <div class="section">
 
         <div class="feedback-indicator">
-          <svg id="feedbackIcon" class="feedback-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="8" stroke-linecap="round">
-            <circle cx="50" cy="50" r="42" stroke-opacity="0.25"/>
-            <g id="feedbackMark"></g>
-          </svg>
+          <div class="feedback-icon" id="feedbackIcon"></div>
         </div>
 
         <div class="action-row">
@@ -755,27 +857,36 @@
         </div>
 
         <!-- Ответ нотами: раскладка пианино -->
-        <div class="piano-container" id="pianoAnswer">
-          <div class="black-keys-row">
-            <button class="toggle-chip left-note-chip black-key" data-pc="1" style="left: 39px;">C#/Db</button>
-            <button class="toggle-chip left-note-chip black-key" data-pc="3" style="left: 117px;">D#/Eb</button>
-            <button class="toggle-chip left-note-chip black-key" data-pc="6" style="left: 273px;">F#/Gb</button>
-            <button class="toggle-chip left-note-chip black-key" data-pc="8" style="left: 351px;">G#/Ab</button>
-            <button class="toggle-chip left-note-chip black-key" data-pc="10" style="left: 429px;">A#/Bb</button>
+        <div class="answer-group-box">
+          <div class="piano-container" id="pianoAnswer">
+            <div class="black-keys-row">
+              <button class="toggle-chip left-note-chip black-key" data-pc="1" style="left: 39px;">C#/Db</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="3" style="left: 117px;">D#/Eb</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="6" style="left: 273px;">F#/Gb</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="8" style="left: 351px;">G#/Ab</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="10" style="left: 429px;">A#/Bb</button>
+            </div>
+            <div class="white-keys-row">
+              <button class="toggle-chip left-note-chip" data-pc="0">C</button>
+              <button class="toggle-chip left-note-chip" data-pc="2">D</button>
+              <button class="toggle-chip left-note-chip" data-pc="4">E</button>
+              <button class="toggle-chip left-note-chip" data-pc="5">F</button>
+              <button class="toggle-chip left-note-chip" data-pc="7">G</button>
+              <button class="toggle-chip left-note-chip" data-pc="9">A</button>
+              <button class="toggle-chip left-note-chip" data-pc="11">B</button>
+            </div>
           </div>
-          <div class="white-keys-row">
-            <button class="toggle-chip left-note-chip" data-pc="0">C</button>
-            <button class="toggle-chip left-note-chip" data-pc="2">D</button>
-            <button class="toggle-chip left-note-chip" data-pc="4">E</button>
-            <button class="toggle-chip left-note-chip" data-pc="5">F</button>
-            <button class="toggle-chip left-note-chip" data-pc="7">G</button>
-            <button class="toggle-chip left-note-chip" data-pc="9">A</button>
-            <button class="toggle-chip left-note-chip" data-pc="11">B</button>
-          </div>
-        </div>
+</div>
 
         <!-- Ответ интервалами/аккордами: список названий -->
-        <div class="answer-chip-grid" id="chipAnswer" style="display:none;"></div>
+        <div class="answer-group-box" id="chipAnswerBox" style="display:none;">
+          <div class="answer-chip-grid" id="chipAnswer"></div>
+        </div>
+
+        <!-- Октавы под кнопками ответа (показываются, если выбрано 2+ октавы в настройках) -->
+        <div class="answer-group-box" id="octaveAnswerBox" style="display:none;">
+          <div class="answer-octaves-row" id="octaveAnswerRow"></div>
+        </div>
 
       </div>
     </div>
@@ -807,10 +918,10 @@
 
       <div class="section">
         <div class="section-title">Выберите октаву или несколько октав</div>
-        <div class="octaves-row" id="octave-grid"></div>
+<div class="octaves-row" id="octave-grid"></div>
       </div>
 
-      <div class="section">
+      <div class="section" id="audioOutputSection">
         <div class="section-title">Вывод звука</div>
 
         <div class="segmented-control audio-output-row" id="outputSegment">
@@ -873,6 +984,14 @@
               <option value="3">Тема №3</option>
               <option value="4">Тема №4</option>
             </select>
+
+            <div class="colormode-row">
+              <span>Цвет ответа:</span>
+              <div class="segmented-control" id="colorModeSegment">
+                <button class="segment-btn active" data-colormode="muted">Обычный</button>
+                <button class="segment-btn" data-colormode="neon">Неон</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1030,6 +1149,9 @@ window.EAR_TRAINER_CONFIG = {
     midiAnswerEnabled: false,
     octaveMatch: 'any',
     currentTarget: null,
+    pendingPc: null,
+    pendingChoiceId: null,
+    pendingOct: null,
     answered: false,
   };
 
@@ -1107,7 +1229,7 @@ window.EAR_TRAINER_CONFIG = {
         const top = root + iv.semitones;
         if (root >= MIN_MIDI && top <= MAX_MIDI) {
           const notes = [root, top];
-          return { type: 'intervals', answerId: iv.id, notes, velocities: notes.map(randVelocity) };
+          return { type: 'intervals', answerId: iv.id, answerPc: pc, answerOct: oct, notes, velocities: notes.map(randVelocity) };
         }
       }
       alert('Не удалось подобрать интервал в выбранном диапазоне октав.');
@@ -1125,7 +1247,7 @@ window.EAR_TRAINER_CONFIG = {
       const chord = pool[randInt(pool.length)];
       const notes = chord.intervals.map((s) => root + s);
       if (notes[0] >= MIN_MIDI && notes[notes.length - 1] <= MAX_MIDI) {
-        return { type: 'chords', answerId: chord.id, notes, velocities: notes.map(randVelocity) };
+        return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, notes, velocities: notes.map(randVelocity) };
       }
     }
     alert('Не удалось подобрать аккорд в выбранном диапазоне октав — выберите больше октав.');
@@ -1306,21 +1428,17 @@ window.EAR_TRAINER_CONFIG = {
   }
 
   // ---------------- feedback icon ----------------
-  const CHECK_PATH = 'M 28 52 L 42 66 L 74 32';
-  const CROSS_PATH_1 = 'M 32 32 L 68 68';
-  const CROSS_PATH_2 = 'M 68 32 L 32 68';
 
   function setFeedback(correctOrNull) {
     const icon = $('feedbackIcon');
-    const mark = $('feedbackMark');
     icon.classList.remove('state-correct', 'state-incorrect');
-    mark.innerHTML = '';
+    icon.textContent = '';
     if (correctOrNull === true) {
       icon.classList.add('state-correct');
-      mark.innerHTML = '<path d="' + CHECK_PATH + '"/>';
+      icon.textContent = '✓';
     } else if (correctOrNull === false) {
       icon.classList.add('state-incorrect');
-      mark.innerHTML = '<path d="' + CROSS_PATH_1 + '"/><path d="' + CROSS_PATH_2 + '"/>';
+      icon.textContent = '✗';
     }
   }
 
@@ -1328,14 +1446,20 @@ window.EAR_TRAINER_CONFIG = {
   function renderAnswerUI() {
     const piano = $('pianoAnswer');
     const chips = $('chipAnswer');
-    piano.style.display = state.mode === 'notes' ? 'flex' : 'none';
+    const chipBox = $('chipAnswerBox');
+    piano.style.display = 'flex';
     chips.style.display = state.mode === 'notes' ? 'none' : 'flex';
+    chipBox.style.display = state.mode === 'notes' ? 'none' : 'block';
     piano.querySelectorAll('.toggle-chip').forEach((el) => {
       el.classList.remove('selected', 'correct', 'incorrect', 'disabled');
+      el.style.pointerEvents = 'auto';
+      el.style.opacity = '1';
     });
 
+    chips.classList.remove('mode-intervals', 'mode-chords');
     if (state.mode !== 'notes') {
       chips.innerHTML = '';
+      chips.classList.add(state.mode === 'intervals' ? 'mode-intervals' : 'mode-chords');
       const items = state.mode === 'intervals'
         ? getSelectedIntervals().map((iv) => ({ id: iv.id, label: iv.name }))
         : getSelectedChords().map((c) => ({ id: c.id, label: c.name }));
@@ -1348,14 +1472,76 @@ window.EAR_TRAINER_CONFIG = {
         chips.appendChild(btn);
       });
     }
+
+    renderOctaveAnswerRow();
+  }
+
+  function renderOctaveAnswerRow() {
+    const row = $('octaveAnswerRow');
+    const box = $('octaveAnswerBox');
+    const octaves = getSelectedOctaves().filter((o) => o >= 1 && o <= 7);
+    row.innerHTML = '';
+    if (octaves.length < 2) {
+      row.style.display = 'none';
+      box.style.display = 'none';
+      return;
+    }
+    row.style.display = 'flex';
+    box.style.display = 'block';
+    octaves.sort((a, b) => a - b).forEach((o) => {
+      const btn = document.createElement('div');
+      btn.className = 'toggle-chip';
+      btn.textContent = String(o);
+      btn.dataset.oct = o;
+      btn.addEventListener('click', () => octaveAnswerClicked(o, btn));
+      row.appendChild(btn);
+    });
   }
 
   function checkAnswer(id, el) {
     if (state.answered) return;
     const target = state.currentTarget;
     if (!target) return;
-    const correct = id === target.answerId;
-    finishAnswer(correct, target, id);
+
+    if (state.mode === 'notes') {
+      const correct = id === target.answerId;
+      finishAnswer(correct, target, id);
+      return;
+    }
+
+    // Режимы "Интервалы"/"Аккорды": ответ составной — нота + интервал/аккорд (+ октава, если их несколько)
+    state.pendingChoiceId = id;
+    el.parentElement.querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tryFinishCompositeAnswer(target);
+  }
+
+  function pianoNoteClicked(pc, el) {
+    if (state.answered || state.mode === 'notes') return;
+    state.pendingPc = pc;
+    $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tryFinishCompositeAnswer(state.currentTarget);
+  }
+
+  function octaveAnswerClicked(oct, el) {
+    if (state.answered) return;
+    state.pendingOct = oct;
+    $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tryFinishCompositeAnswer(state.currentTarget);
+  }
+
+  function tryFinishCompositeAnswer(target) {
+    if (!target || state.mode === 'notes') return;
+    const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+    if (state.pendingPc === null || state.pendingChoiceId === null) return;
+    if (needsOct && state.pendingOct === null) return;
+
+    const correct = state.pendingChoiceId === target.answerId
+      && state.pendingPc === target.answerPc
+      && (!needsOct || state.pendingOct === target.answerOct);
+    finishAnswer(correct, target, state.pendingChoiceId);
   }
 
   function finishAnswer(correct, target, chosenId) {
@@ -1374,6 +1560,16 @@ window.EAR_TRAINER_CONFIG = {
         if (el.dataset.id === target.answerId) el.classList.add('correct');
         else if (chosenId !== null && el.dataset.id === chosenId) el.classList.add('incorrect');
       });
+      $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (String(el.dataset.pc) === String(target.answerPc)) el.classList.add('correct');
+        else if (state.pendingPc !== null && el.dataset.pc === String(state.pendingPc)) el.classList.add('incorrect');
+      });
+      $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (String(el.dataset.oct) === String(target.answerOct)) el.classList.add('correct');
+        else if (state.pendingOct !== null && el.dataset.oct === String(state.pendingOct)) el.classList.add('incorrect');
+      });
     }
   }
 
@@ -1382,6 +1578,9 @@ window.EAR_TRAINER_CONFIG = {
     if (!target) return;
     state.currentTarget = target;
     state.answered = false;
+    state.pendingPc = null;
+    state.pendingChoiceId = null;
+    state.pendingOct = null;
     activeInputNotes.clear();
     setFeedback(null);
     renderAnswerUI();
@@ -1457,7 +1656,7 @@ window.EAR_TRAINER_CONFIG = {
       chip.className = 'toggle-chip' + (OCTAVE_DEFAULT_SELECTED.has(o.o) ? ' selected' : '');
       chip.textContent = o.label;
       chip.dataset.oct = o.o;
-      chip.addEventListener('click', () => chip.classList.toggle('selected'));
+      chip.addEventListener('click', () => { chip.classList.toggle('selected'); renderOctaveAnswerRow(); });
       grid.appendChild(chip);
     });
   }
@@ -1483,7 +1682,10 @@ window.EAR_TRAINER_CONFIG = {
     $('replayBtn').addEventListener('click', replay);
 
     $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
-      el.addEventListener('click', () => checkAnswer(el.dataset.pc, el));
+      el.addEventListener('click', () => {
+        if (state.mode === 'notes') checkAnswer(el.dataset.pc, el);
+        else pianoNoteClicked(el.dataset.pc, el);
+      });
     });
 
     document.querySelectorAll('#modeTabs .tab-btn').forEach((btn) => {
@@ -1496,6 +1698,7 @@ window.EAR_TRAINER_CONFIG = {
         state.answered = false;
         setFeedback(null);
         renderAnswerUI();
+        $('audioOutputSection').style.display = state.mode === 'notes' ? 'flex' : 'none';
       });
     });
 
@@ -1556,9 +1759,40 @@ window.EAR_TRAINER_CONFIG = {
       document.body.setAttribute('data-theme', e.target.value);
     });
 
+    document.querySelectorAll('#colorModeSegment .segment-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#colorModeSegment .segment-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (btn.dataset.colormode === 'neon') {
+          document.documentElement.setAttribute('data-colormode', 'neon');
+          document.body.setAttribute('data-colormode', 'neon');
+        } else {
+          document.documentElement.removeAttribute('data-colormode');
+          document.body.removeAttribute('data-colormode');
+        }
+        try { localStorage.setItem('earTrainerColorMode', btn.dataset.colormode); } catch (e) {}
+      });
+    });
+
   }
 
   function init() {
+    try {
+      const savedColorMode = localStorage.getItem('earTrainerColorMode');
+      if (savedColorMode === 'neon') {
+        document.documentElement.setAttribute('data-colormode', 'neon');
+        document.body.setAttribute('data-colormode', 'neon');
+        document.querySelectorAll('#colorModeSegment .segment-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.colormode === 'neon');
+        });
+      } else if (savedColorMode === 'muted') {
+        document.documentElement.removeAttribute('data-colormode');
+        document.body.removeAttribute('data-colormode');
+        document.querySelectorAll('#colorModeSegment .segment-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.colormode === 'muted');
+        });
+      }
+    } catch (e) {}
     buildPoolGrid();
     buildOctaveGrid();
     buildSelects();
