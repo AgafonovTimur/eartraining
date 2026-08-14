@@ -209,13 +209,16 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    /* Подложка увеличена вверх на 25px: сверху добавлено 25px,
+       а сама панель сдвинута вверх на 12.5px, чтобы содержимое
+       и остальной интерфейс остались на своих местах. */
+    transform: translate(-50%, calc(-50% - 12.5px));
     width: 960px;
     max-height: 90vh;
     overflow-y: auto;
     background-color: var(--panel-bg);
     border-radius: 12px;
-    padding: 20px;
+    padding: 45px 20px 20px;
     box-shadow: var(--panel-shadow);
     display: flex;
     flex-direction: column;
@@ -224,7 +227,40 @@
     z-index: 1;
   }
 
-  /* Панель настроек — справа от основного меню, появляется/исчезает с анимацией (не привязана к краю страницы) */
+  /* Отладочный лог нажатых нот — фиксированная панель справа от меню ответов */
+  .debug-log-panel {
+    position: fixed;
+    top: 50%;
+    left: calc(50% + 500px);
+    transform: translateY(-50%);
+    width: 260px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: var(--panel-shadow);
+    z-index: 50;
+    font-size: 12px;
+    color: var(--text-hint);
+  }
+
+  .debug-log-panel h4 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .debug-log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid var(--divider-color);
+    color: #ccc;
+    white-space: nowrap;
+    font-size: 30px;
+  }
+
   .menu-panel.right-panel {
     position: fixed;
     top: 50%;
@@ -580,7 +616,10 @@
     padding: 8px 0;
   }
 
+  .left-note-chip:focus { outline: none; }
+
   .left-note-chip {
+    position: relative;
     width: 119px;
     height: 66px;
     flex: 0 0 119px;
@@ -717,6 +756,44 @@
   /* Размеры кнопок в окне ответа (перенесено из макета) */
   .answer-chip-grid.mode-intervals .toggle-chip { width: 213px; flex: 0 0 213px; }
   .answer-chip-grid.mode-chords .toggle-chip { width: 213px; flex: 0 0 213px; }
+
+  /* Подпись «Сыграно» — показывается, когда сыгранный набор нот не совпал ни с одним аккордом из списка */
+  .played-notes-info {
+    display: none;
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--bad-color);
+    text-shadow: var(--bad-text-glow);
+  }
+  .played-notes-info.visible { display: block; }
+
+  /* Номер порядка нажатия ноты при наборе интервала/аккорда нотами */
+  .left-note-chip[data-seq]::after {
+    content: attr(data-seq);
+    position: absolute;
+    top: 3px;
+    right: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.9;
+  }
+
+  /* Подпись под пианино при наборе интервала/аккорда нотами */
+  .note-seq-info {
+    display: none;
+    width: 100%;
+    margin-top: 2px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-hint);
+  }
+  .note-seq-info.visible { display: block; }
+  .note-seq-info.bad {
+    color: var(--bad-color);
+    text-shadow: var(--bad-text-glow);
+  }
 
   .answer-octaves-row {
     display: flex;
@@ -979,18 +1056,20 @@
   .feedback-indicator {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding: 10px 0;
+    padding: 0 0 6px;
     min-height: 120px;
   }
 
   .debug-answer {
-    font-size: 70px;
-    color: rgba(85, 214, 110, 0.7);
-    margin-bottom: 4px;
+    font-size: 26px;
+    color: #4caf50;
+    margin-bottom: 18px;
     display: none;
     text-align: center;
+    position: relative;
+    top: -25px;
   }
 
   .debug-answer.visible {
@@ -998,6 +1077,8 @@
   }
 
   .feedback-icon {
+    position: relative;
+    top: -25px;
     width: 100px;
     height: 100px;
     display: flex;
@@ -1073,6 +1154,12 @@
 
   <div class="app-layout">
 
+    <!-- Отладочная панель: лог нажатых нот -->
+    <div class="debug-log-panel" id="debugLogPanel">
+      <h4>Нажатые ноты</h4>
+      <div id="debugLogList"></div>
+    </div>
+
     <!-- ГЛАВНЫЙ ЭКРАН (ВСЕГДА ПО ЦЕНТРУ) -->
     <div class="menu-panel left-panel">
       <div class="section">
@@ -1080,9 +1167,10 @@
         <div class="feedback-indicator">
           <div class="debug-answer" id="debugAnswer"></div>
           <div class="feedback-icon" id="feedbackIcon"></div>
+          <div class="note-seq-info" id="noteSeqInfo"></div>
         </div>
 
-        <div class="action-row">
+        <div class="action-row" id="actionRow">
           <button class="btn-action" id="nextQuestionBtn">Новый вопрос</button>
           <button class="btn-action" id="replayBtn">Повторить</button>
         </div>
@@ -1112,6 +1200,7 @@
         <!-- Ответ интервалами/аккордами: список названий -->
         <div class="answer-group-box" id="chipAnswerBox" style="display:none;">
           <div class="answer-chip-grid" id="chipAnswer"></div>
+          <div class="played-notes-info" id="playedNotesInfo"></div>
         </div>
 
         <!-- Направление интервала под кнопками ответа (показывается, если выбраны обе кнопки направления в настройках) -->
@@ -1168,6 +1257,18 @@
             </span>
           </div>
           <div id="pool-grid"></div>
+
+          <label id="intervalByNotesRow" class="checkbox-row" style="display:none; margin-top:10px;">
+            <input type="checkbox" id="intervalByNotesCheckbox" checked>
+            <div class="custom-checkbox"></div>
+            <span class="checkbox-label">выбрать интервал нотами</span>
+          </label>
+
+          <label id="chordByNotesRow" class="checkbox-row" style="display:none; margin-top:10px;">
+            <input type="checkbox" id="chordByNotesCheckbox" checked>
+            <div class="custom-checkbox"></div>
+            <span class="checkbox-label">выбрать аккорд нотами</span>
+          </label>
         </div>
 
         <!-- Ступени (обращения) аккордов -->
@@ -1238,6 +1339,18 @@
       </div>
 
       <div class="section" id="audioOutputSection">
+        <label id="showResultRow" class="checkbox-row" style="margin-bottom:10px;">
+          <input type="checkbox" id="showResultCheckbox" checked>
+          <div class="custom-checkbox"></div>
+          <span class="checkbox-label">показывать результат</span>
+        </label>
+
+        <label id="hideActionButtonsRow" class="checkbox-row" style="margin-bottom:10px;">
+          <input type="checkbox" id="hideActionButtonsCheckbox" checked>
+          <div class="custom-checkbox"></div>
+          <span class="checkbox-label">показывать "новый вопрос" и "повторить"</span>
+        </label>
+
         <div class="section-title">Вывод звука</div>
 
         <div class="segmented-control audio-output-row" id="outputSegment">
@@ -1475,6 +1588,8 @@ window.EAR_TRAINER_CONFIG = {
     pendingOct: null,
     pendingDir: null,
     pendingInv: null,
+    pendingSeq: [],
+    lastPlayedNotes: null,
     answered: false,
     recentVariantIds: [],
   };
@@ -1507,6 +1622,10 @@ window.EAR_TRAINER_CONFIG = {
     minVelocity: 100,
     theme: '2',
     sidePanelPinned: true,
+    intervalByNotes: true,
+    chordByNotes: true,
+    hideActionButtons: true,
+    showResult: true,
   }, loadSavedSettings());
 
   function saveSettings() {
@@ -1532,8 +1651,16 @@ window.EAR_TRAINER_CONFIG = {
     settingsCache.octaveMatch = state.octaveMatch;
     settingsCache.minVelocity = state.minVelocity;
     settingsCache.theme = document.body.getAttribute('data-theme') || '2';
+    const ivNotesCb = $('intervalByNotesCheckbox');
+    if (ivNotesCb) settingsCache.intervalByNotes = ivNotesCb.checked;
+    const chNotesCb = $('chordByNotesCheckbox');
+    if (chNotesCb) settingsCache.chordByNotes = chNotesCb.checked;
     const pinCheckbox = $('sidePanelPinCheckbox');
     if (pinCheckbox) settingsCache.sidePanelPinned = pinCheckbox.checked;
+    const hideActCb = $('hideActionButtonsCheckbox');
+    if (hideActCb) settingsCache.hideActionButtons = hideActCb.checked;
+    const showResCb = $('showResultCheckbox');
+    if (showResCb) settingsCache.showResult = showResCb.checked;
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsCache)); } catch (e) {}
   }
 
@@ -1595,6 +1722,221 @@ window.EAR_TRAINER_CONFIG = {
       offs[i] = offs[i - 1] + randInt(spread - offs[i - 1] + 1);
     }
     return intervals.map((s, i) => s + 12 * offs[i]);
+  }
+
+  // ---------------- режим «набрать интервал/аккорд нотами» ----------------
+  // Ответ набирается кликами по клавишам пианино (или клавишами ПК) по порядку.
+  // Октавы у набранных нот не учитываются — только сами ноты и их порядок.
+  function isNoteEntryMode() {
+    if (state.mode === 'intervals') {
+      const cb = $('intervalByNotesCheckbox');
+      return !!(cb && cb.checked);
+    }
+    if (state.mode === 'chords') {
+      const cb = $('chordByNotesCheckbox');
+      return !!(cb && cb.checked);
+    }
+    return false;
+  }
+
+  // Какие ноты и в каком порядке нужно набрать для текущего вопроса
+  function expectedPcSequence(target) {
+    if (!target) return [];
+    if (target.type === 'intervals') {
+      const iv = INTERVALS.find((i) => i.id === target.answerId);
+      if (!iv) return [];
+      const semis = iv.semitones % 12;
+      const root = target.answerPc;
+      // Интервал вверх — сначала корневая нота, потом верхняя (C → G).
+      // Интервал вниз — обратный порядок: сначала нижняя нота, потом корневая (F → C).
+      if (target.answerDir === 'down') {
+        const bottom = ((root - semis) % 12 + 12) % 12;
+        return [bottom, root];
+      }
+      return [root, (root + semis) % 12];
+    }
+    if (target.type === 'chords') {
+      const chord = CHORDS.find((c) => c.id === target.answerId);
+      if (!chord) return [];
+      const inv = INVERSION_CHORD_IDS.includes(chord.id) ? (target.inversion || 0) : 0;
+      const seq = [];
+      applyInversion(chord.intervals, inv).forEach((s) => {
+        const pc = ((target.answerPc + s) % 12 + 12) % 12;
+        if (!seq.includes(pc)) seq.push(pc);
+      });
+      return seq;
+    }
+    return [];
+  }
+
+  function pcName(pc) { return PIANO_KEYS.find((k) => k.pc === pc).label; }
+
+  function isShowResultOn() {
+    const cb = $('showResultCheckbox');
+    return cb ? cb.checked : true;
+  }
+
+  function updateNoteSeqInfo(text, bad) {
+    const el = $('noteSeqInfo');
+    if (!el) return;
+    if (text && !isShowResultOn()) text = '';
+    el.textContent = text || '';
+    el.classList.toggle('visible', !!text);
+    el.classList.toggle('bad', !!bad);
+  }
+
+  // ---------------- подробное пояснение ошибки ----------------
+  function invLabel(i) {
+    const f = INVERSIONS.find((v) => v.i === i);
+    return f ? f.label : ('обращение ' + i);
+  }
+  function ivNameById(id) { const iv = INTERVALS.find((i) => i.id === id); return iv ? iv.name.toLowerCase() : null; }
+  function chNameById(id) { const c = CHORDS.find((c) => c.id === id); return c ? c.name : null; }
+  function dirLabel(d) { return d === 'down' ? 'интервал вниз' : 'интервал вверх'; }
+
+  function targetBaseOct(target) {
+    if (!target) return null;
+    if (target.type === 'chords' && target.notes && target.notes.length) return octaveOfMidi(uniqSorted(target.notes)[0]);
+    return target.answerOct;
+  }
+
+  // Причины ошибки при наборе ответа нотами на пианино
+  function seqMistakeReasons(target) {
+    const reasons = [];
+    const mine = state.pendingSeq.slice();
+    const need = expectedPcSequence(target);
+    const sorted = (a) => a.slice().sort((x, y) => x - y).join(',');
+    const sameSet = mine.length === need.length && sorted(mine) === sorted(need);
+
+    if (sameSet && mine.join(',') !== need.join(',')) {
+      if (target.type === 'intervals') {
+        reasons.push(target.answerDir === 'down'
+          ? 'не тот порядок: интервал вниз — сначала нижняя нота, потом корневая'
+          : 'не тот порядок: интервал вверх — сначала корневая нота, потом верхняя');
+      } else {
+        reasons.push('не тот порядок: нужно ' + invLabel(target.inversion || 0));
+      }
+    } else if (!sameSet) {
+      if (target.type === 'intervals' && mine.length >= 2) {
+        let semis = ((mine[1] - mine[0]) % 12 + 12) % 12;
+        if (semis === 0) semis = 12;
+        const played = INTERVALS.find((i) => i.semitones === semis);
+        const needName = ivNameById(target.answerId);
+        if (played && needName && played.name.toLowerCase() !== needName) {
+          reasons.push('интервал: у вас ' + played.name.toLowerCase() + ', нужен ' + needName);
+        }
+      }
+      if (target.type === 'chords' && mine.length) {
+        const pcs = uniqSorted(mine);
+        let match = null;
+        for (const root of pcs) {
+          const rel = uniqSorted(pcs.map((p) => ((p - root) % 12 + 12) % 12));
+          const found = CHORDS.find((c) => arraysEqual(uniqSorted(c.intervals.map((s) => s % 12)), rel));
+          if (found) { match = { chord: found, root: root }; break; }
+        }
+        if (match && match.chord.id !== target.answerId) {
+          reasons.push('аккорд: у вас ' + NOTE_NAMES[match.root] + ' ' + match.chord.name
+            + ', нужен ' + NOTE_NAMES[target.answerPc] + ' ' + chNameById(target.answerId));
+        }
+      }
+    }
+
+    const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+    if (needsOct && state.pendingOct !== null && state.pendingOct !== target.answerOct) {
+      reasons.push('октава: у вас ' + state.pendingOct + ', нужна ' + target.answerOct);
+    }
+    return reasons;
+  }
+
+  // Причины ошибки при ответе кнопками или с MIDI-клавиатуры
+  function compositeMistakeReasons(target) {
+    const reasons = [];
+    const viaMidi = state.answerSource === 'midi';
+    const octChecked = viaMidi
+      ? state.octaveMatch === 'exact'
+      : getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+
+    if (target.type !== 'notes' && state.pendingPc !== null && state.pendingPc !== target.answerPc) {
+      reasons.push('корневая нота: у вас ' + NOTE_NAMES[state.pendingPc] + ', нужна ' + NOTE_NAMES[target.answerPc]);
+    }
+    if (state.pendingChoiceId !== null && state.pendingChoiceId !== target.answerId) {
+      if (target.type === 'intervals') {
+        const mineName = ivNameById(state.pendingChoiceId);
+        if (mineName) reasons.push('интервал: у вас ' + mineName + ', нужен ' + ivNameById(target.answerId));
+      } else if (target.type === 'chords') {
+        const mineName = chNameById(state.pendingChoiceId);
+        if (mineName) reasons.push('аккорд: у вас ' + mineName + ', нужен ' + chNameById(target.answerId));
+      }
+    }
+    if (target.type === 'intervals' && state.pendingDir && target.answerDir && state.pendingDir !== target.answerDir) {
+      reasons.push('направление: у вас ' + dirLabel(state.pendingDir) + ', нужен ' + dirLabel(target.answerDir));
+    }
+    if (target.type === 'chords' && state.pendingInv !== null && typeof target.inversion === 'number'
+      && INVERSION_CHORD_IDS.includes(target.answerId) && state.pendingInv !== target.inversion) {
+      reasons.push('обращение: у вас ' + invLabel(state.pendingInv) + ', нужно ' + invLabel(target.inversion));
+    }
+    const needOct = targetBaseOct(target);
+    if (octChecked && state.pendingOct !== null && needOct !== null && state.pendingOct !== needOct) {
+      reasons.push('октава: у вас ' + state.pendingOct + ', нужна ' + needOct);
+    }
+    return reasons;
+  }
+
+  // Итоговый текст об ошибке (при верном ответе — пусто)
+  function buildMistakeText(target, correct) {
+    if (correct || !target) return '';
+    const parts = [];
+    if (isNoteEntryMode() && state.pendingSeq.length) {
+      parts.push('Вы набрали: ' + state.pendingSeq.map(pcName).join(' → ')
+        + '   |   Нужно: ' + expectedPcSequence(target).map(pcName).join(' → '));
+      const r = seqMistakeReasons(target);
+      if (r.length) parts.push(r.join('; '));
+      return parts.join('   —   ');
+    }
+    if (state.answerSource === 'midi' && state.lastPlayedNotes && state.lastPlayedNotes.length) {
+      parts.push('Вы сыграли: ' + state.lastPlayedNotes.map(midiToName).join(' ')
+        + '   |   Нужно: ' + uniqSorted(target.notes || []).map(midiToName).join(' '));
+    }
+    const r = compositeMistakeReasons(target);
+    if (r.length) parts.push(r.join('; '));
+    return parts.join('   —   ');
+  }
+
+  function clearNoteSeq() {
+    state.pendingSeq = [];
+    document.querySelectorAll('#pianoAnswer .toggle-chip').forEach((el) => el.removeAttribute('data-seq'));
+    updateNoteSeqInfo('', false);
+  }
+
+  function noteSeqClicked(pc) {
+    const target = state.currentTarget;
+    if (!target || state.answered) return;
+    const expected = expectedPcSequence(target);
+    if (!expected.length) return;
+    if (state.pendingSeq.length >= expected.length) return;
+    state.pendingSeq.push(pc);
+    const el = document.querySelector('#pianoAnswer .toggle-chip[data-pc="' + pc + '"]');
+    if (el) {
+      el.classList.add('selected');
+      el.dataset.seq = state.pendingSeq.filter((p) => p === pc).length > 1
+        ? el.dataset.seq + ',' + state.pendingSeq.length
+        : String(state.pendingSeq.length);
+    }
+    tryFinishNoteSeqAnswer(target);
+  }
+
+  function tryFinishNoteSeqAnswer(target) {
+    if (!target || !isNoteEntryMode()) return;
+    const expected = expectedPcSequence(target);
+    if (!expected.length) return;
+    if (state.pendingSeq.length < expected.length) return;
+    const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+    if (needsOct && state.pendingOct === null) return;
+
+    const seqOk = arraysEqual(state.pendingSeq, expected);
+    const correct = seqOk && (!needsOct || state.pendingOct === target.answerOct);
+    state.pendingPc = state.pendingSeq[0];
+    finishAnswer(correct, target, seqOk ? target.answerId : null);
   }
 
   // Максимально доступное обращение среди выбранных аккордов (0 — только основной)
@@ -1677,7 +2019,7 @@ window.EAR_TRAINER_CONFIG = {
         let notes, ok;
         if (dir === 'down') {
           const bottom = root - semis;
-          notes = [bottom, root];
+          notes = [root, bottom];
           ok = bottom >= MIN_MIDI && root <= MAX_MIDI;
         } else {
           const top = root + semis;
@@ -1739,24 +2081,8 @@ window.EAR_TRAINER_CONFIG = {
   let debugAnswerVisible = false;
 
   function debugLabelForTarget(target) {
-    if (!target) return '';
-    if (target.type === 'notes') {
-      return NOTE_NAMES[parseInt(target.answerId, 10)] + target.answerOct;
-    }
-    if (target.type === 'intervals') {
-      const iv = INTERVALS.find((i) => i.id === target.answerId);
-      const rootName = NOTE_NAMES[target.answerPc] + target.answerOct;
-      const dirLabel = target.answerDir === 'down' ? 'вниз' : 'вверх';
-      return rootName + ' — ' + iv.name + ' (' + dirLabel + ')';
-    }
-    const chord = CHORDS.find((c) => c.id === target.answerId);
-    const rootName = NOTE_NAMES[target.answerPc] + target.answerOct;
-    let text = rootName + ' — ' + chord.name;
-    if (INVERSION_CHORD_IDS.includes(chord.id)) {
-      const invLabel = INVERSIONS.find((iv) => iv.i === target.inversion);
-      if (invLabel) text += ' (' + invLabel.label + ')';
-    }
-    return text;
+    if (!target || !target.notes) return '';
+    return target.notes.map(midiToName).join(', ');
   }
 
   function updateDebugAnswer() {
@@ -1772,6 +2098,45 @@ window.EAR_TRAINER_CONFIG = {
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
     debugAnswerVisible = !debugAnswerVisible;
     updateDebugAnswer();
+  });
+
+  // ---------------- ввод ответа с клавиатуры ПК ----------------
+  // Буквы A..G — ноты (раскладка не важна: используется физическая клавиша,
+  // поэтому русские Ф, И, С, В, У, А, П работают так же).
+  // Shift + буква — диез (Shift+D = D#), Пробел, затем буква — бемоль (Space, G = Gb).
+  const KEY_CODE_TO_PC = { KeyC: 0, KeyD: 2, KeyE: 4, KeyF: 5, KeyG: 7, KeyA: 9, KeyB: 11 };
+  let flatPrefixArmed = false;
+
+  function isTypingField() {
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    return tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+  }
+
+  function pressPcFromKeyboard(pc) {
+    if (state.answered || !state.currentTarget) return;
+    const el = document.querySelector('#pianoAnswer .toggle-chip[data-pc="' + pc + '"]');
+    if (!el) return;
+    if (state.mode === 'notes') checkAnswer(String(pc), el);
+    else pianoNoteClicked(String(pc), el);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (isTypingField()) return;
+    if (e.code === 'Space') {
+      // Пробел после ответа — новый вопрос (обрабатывается отдельно),
+      // до ответа — приставка «бемоль» для следующей ноты
+      if (!state.answered) { e.preventDefault(); flatPrefixArmed = true; }
+      return;
+    }
+    const base = KEY_CODE_TO_PC[e.code];
+    if (base === undefined) return;
+    e.preventDefault();
+    let pc = base;
+    if (flatPrefixArmed) pc = (base + 11) % 12;
+    else if (e.shiftKey) pc = (base + 1) % 12;
+    flatPrefixArmed = false;
+    pressPcFromKeyboard(pc);
   });
 
   // ---------------- playback: online ----------------
@@ -1939,12 +2304,28 @@ window.EAR_TRAINER_CONFIG = {
     }
   }
 
+  // ---------------- debug: лог нажатых нот ----------------
+  const DEBUG_LOG_MAX_ENTRIES = 40;
+
+  function logDebugNote(midiNote) {
+    const list = $('debugLogList');
+    if (!list) return;
+    const entry = document.createElement('div');
+    entry.className = 'debug-log-entry';
+    entry.textContent = midiToName(midiNote);
+    list.insertBefore(entry, list.firstChild);
+    while (list.children.length > DEBUG_LOG_MAX_ENTRIES) {
+      list.removeChild(list.lastChild);
+    }
+  }
+
   function handleMidiInputMessage(e) {
     const [status, note, vel] = e.data;
     const cmd = status & 0xf0;
     if (cmd === 0x90 && vel > 0) {
       activeInputNotes.set(note, state.minVelocity);
       midiAnswerBuffer.add(note);
+      logDebugNote(note);
       scheduleMidiAnswerCheck();
     } else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
       activeInputNotes.delete(note);
@@ -2000,8 +2381,7 @@ window.EAR_TRAINER_CONFIG = {
 
     if (target.type === 'intervals') {
       if (notes.length !== 2) return false;
-      const iv = INTERVALS.find((i) => i.id === target.answerId);
-      const need = uniqSorted([target.answerPc, (target.answerPc + iv.semitones) % 12]);
+      const need = uniqSorted(target.notes.map(pcOfMidi));
       if (!arraysEqual(pcs, need)) return false;
       const firstNote = playedNotes[0];
       const lastNote = playedNotes[playedNotes.length - 1];
@@ -2049,7 +2429,9 @@ window.EAR_TRAINER_CONFIG = {
       if (playedNotes.length >= 2) {
         const lastNote = playedNotes[playedNotes.length - 1];
         result.dir = lastNote > firstNote ? 'up' : (lastNote < firstNote ? 'down' : null);
-        const semis = Math.abs(lastNote - firstNote) % 12;
+        const rawSemis = Math.abs(lastNote - firstNote);
+        // 12, 24, 36... — это октава (P8), а не унисон: приводим к простому интервалу 1..12
+        const semis = (rawSemis % 12 === 0 && rawSemis > 0) ? 12 : rawSemis % 12;
         const iv = INTERVALS.find((i) => i.semitones === semis);
         result.choiceId = iv ? iv.id : null;
       }
@@ -2083,12 +2465,15 @@ window.EAR_TRAINER_CONFIG = {
     const played = [...midiAnswerBuffer];
     if (played.length === 0) return;
     midiAnswerBuffer.clear();
+    state.lastPlayedNotes = played;
+    state.answerSource = 'midi';
     const correct = midiAnswerCorrect(target, played);
     const guess = analyzeMidiPlayed(target, played);
     state.pendingPc = guess.pc;
     state.pendingOct = guess.oct;
     state.pendingDir = guess.dir;
     state.pendingInv = guess.inv;
+    state.pendingChoiceId = guess.choiceId;
     finishAnswer(correct, target, guess.choiceId);
   }
 
@@ -2119,10 +2504,12 @@ window.EAR_TRAINER_CONFIG = {
       el.style.opacity = '1';
     });
 
+    clearNoteSeq();
+
     chips.classList.remove('mode-intervals', 'mode-chords');
-    let showChips = state.mode !== 'notes';
-    if (state.mode !== 'notes') {
-      chips.innerHTML = '';
+    let showChips = state.mode !== 'notes' && !isNoteEntryMode();
+    chips.innerHTML = '';
+    if (showChips) {
       chips.classList.add(state.mode === 'intervals' ? 'mode-intervals' : 'mode-chords');
       const items = state.mode === 'intervals'
         ? getSelectedIntervals().map((iv) => ({ id: iv.id, label: iv.name }))
@@ -2148,10 +2535,18 @@ window.EAR_TRAINER_CONFIG = {
     renderInversionAnswerRow();
   }
 
+  // Настройки поменяли уже после ответа — старая подсветка становится недействительной,
+  // поэтому сразу выдаём новый вопрос вместо «замороженного» окна ответа.
+  function settingsChanged() {
+    saveSettings();
+    if (state.answered && state.currentTarget) { nextQuestion(); return; }
+    renderAnswerUI();
+  }
+
   function renderDirectionAnswerRow() {
     const row = $('directionAnswerRow');
     const box = $('directionAnswerBox');
-    if (state.mode !== 'intervals') { row.style.display = 'none'; box.style.display = 'none'; return; }
+    if (state.mode !== 'intervals' || isNoteEntryMode()) { row.style.display = 'none'; box.style.display = 'none'; return; }
     const dirs = getSelectedDirections();
     row.innerHTML = '';
     if (dirs.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
@@ -2170,7 +2565,7 @@ window.EAR_TRAINER_CONFIG = {
   function renderInversionAnswerRow() {
     const row = $('inversionAnswerRow');
     const box = $('inversionAnswerBox');
-    if (state.mode !== 'chords') { row.style.display = 'none'; box.style.display = 'none'; return; }
+    if (state.mode !== 'chords' || isNoteEntryMode()) { row.style.display = 'none'; box.style.display = 'none'; return; }
     const invSel = getSelectedInversions().filter((iv) => iv <= maxInversionAvailable());
     row.innerHTML = '';
     if (invSel.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
@@ -2216,7 +2611,7 @@ window.EAR_TRAINER_CONFIG = {
 
     if (state.mode === 'notes') {
       state.pendingChoiceId = id;
-      el.parentElement.querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+      $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
       el.classList.add('selected');
       tryFinishNotesAnswer(target);
       return;
@@ -2231,6 +2626,8 @@ window.EAR_TRAINER_CONFIG = {
 
   function pianoNoteClicked(pc, el) {
     if (state.answered || state.mode === 'notes') return;
+    pc = parseInt(pc, 10);
+    if (isNoteEntryMode()) { noteSeqClicked(pc); return; }
     state.pendingPc = pc;
     $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
     el.classList.add('selected');
@@ -2275,6 +2672,7 @@ window.EAR_TRAINER_CONFIG = {
 
   function tryFinishCompositeAnswer(target) {
     if (!target || state.mode === 'notes') return;
+    if (isNoteEntryMode()) { tryFinishNoteSeqAnswer(target); return; }
     const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
     const needsDir = state.mode === 'intervals' && getSelectedDirections().length >= 2;
     const needsInv = state.mode === 'chords' && getSelectedInversions().filter((iv) => iv <= maxInversionAvailable()).length >= 2;
@@ -2294,12 +2692,38 @@ window.EAR_TRAINER_CONFIG = {
   function finishAnswer(correct, target, chosenId) {
     state.answered = true;
     setFeedback(correct);
+    showPlayedNotesInfo(chosenId);
 
     if (correct) {
       setTimeout(() => {
-        if (state.currentTarget === target && state.answered) nextQuestion();
+        if (state.currentTarget === target && state.answered) {
+          setFeedback(null);
+          setTimeout(() => {
+            if (state.currentTarget === target && state.answered) nextQuestion();
+          }, 500);
+        }
       }, 900);
     }
+
+    if (isNoteEntryMode() && state.pendingSeq.length) {
+      const expected = expectedPcSequence(target);
+      $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
+        const pc = parseInt(el.dataset.pc, 10);
+        el.classList.add('disabled');
+        el.classList.remove('selected');
+        if (expected.includes(pc)) el.classList.add('correct');
+        else if (state.pendingSeq.includes(pc)) el.classList.add('incorrect');
+      });
+      $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (String(el.dataset.oct) === String(target.answerOct)) el.classList.add('correct');
+        else if (state.pendingOct !== null && el.dataset.oct === String(state.pendingOct)) el.classList.add('incorrect');
+      });
+      updateNoteSeqInfo(buildMistakeText(target, correct), !correct);
+      return;
+    }
+
+    updateNoteSeqInfo(buildMistakeText(target, correct), !correct);
 
     if (state.mode === 'notes') {
       $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
@@ -2341,16 +2765,36 @@ window.EAR_TRAINER_CONFIG = {
     }
   }
 
+  // Если сыгранный на MIDI набор нот не совпал ни с одним аккордом из списка,
+  // подсвечивать в окне ответа нечего — показываем текстом, что именно было сыграно.
+  function showPlayedNotesInfo(chosenId) {
+    const el = $('playedNotesInfo');
+    if (!el) return;
+    const show = state.mode === 'chords' && chosenId === null
+      && state.lastPlayedNotes && state.lastPlayedNotes.length > 0;
+    if (show) {
+      el.textContent = 'Сыграно: ' + uniqSorted(state.lastPlayedNotes).map(midiToName).join(', ');
+      el.classList.add('visible');
+    } else {
+      el.textContent = '';
+      el.classList.remove('visible');
+    }
+  }
+
   function nextQuestion() {
     const target = generateTarget();
     if (!target) return;
     state.currentTarget = target;
     state.answered = false;
+    state.answerSource = null;
     state.pendingPc = null;
     state.pendingChoiceId = null;
     state.pendingOct = null;
     state.pendingDir = null;
     state.pendingInv = null;
+    state.pendingSeq = [];
+    state.lastPlayedNotes = null;
+    showPlayedNotesInfo(null);
     activeInputNotes.clear();
     midiAnswerBuffer.clear();
     setFeedback(null);
@@ -2392,7 +2836,7 @@ window.EAR_TRAINER_CONFIG = {
 
   function buildRootNoteGrid() {
     const selected = (settingsCache.rootPcs && settingsCache.rootPcs.length) ? new Set(settingsCache.rootPcs) : ROOT_NOTE_DEFAULT_SELECTED_PCS;
-    buildPianoGrid($('root-note-grid'), selected, saveSettings, true);
+    buildPianoGrid($('root-note-grid'), selected, settingsChanged, true);
     ensureRootNoteSelection();
   }
 
@@ -2451,6 +2895,8 @@ window.EAR_TRAINER_CONFIG = {
     $('directionSection').style.display = state.mode === 'intervals' ? 'flex' : 'none';
     $('spreadSection').style.display = state.mode === 'intervals' ? 'flex' : 'none';
     $('chordSpreadSection').style.display = state.mode === 'chords' ? 'flex' : 'none';
+    $('intervalByNotesRow').style.display = state.mode === 'intervals' ? 'flex' : 'none';
+    $('chordByNotesRow').style.display = state.mode === 'chords' ? 'flex' : 'none';
     $('poolSectionTitle').textContent = state.mode === 'notes'
       ? 'Выберите ноту или несколько нот'
       : (state.mode === 'intervals' ? 'Выберите интервал или несколько' : 'Выберите аккорд или несколько');
@@ -2463,7 +2909,7 @@ window.EAR_TRAINER_CONFIG = {
 
     if (state.mode === 'notes') {
       const selected = (settingsCache.poolNotes && settingsCache.poolNotes.length) ? new Set(settingsCache.poolNotes) : NOTE_POOL_DEFAULT_SELECTED_PCS;
-      buildPianoGrid(grid, selected, () => { renderAnswerUI(); saveSettings(); });
+      buildPianoGrid(grid, selected, () => { settingsChanged(); });
     } else if (state.mode === 'intervals') {
       grid.className = 'intervals-grid';
       const savedIds = (settingsCache.poolIntervals && settingsCache.poolIntervals.length) ? settingsCache.poolIntervals : null;
@@ -2477,8 +2923,7 @@ window.EAR_TRAINER_CONFIG = {
           // Последний оставшийся выбранный интервал снять нельзя
           if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
           chip.classList.toggle('selected');
-          renderAnswerUI();
-          saveSettings();
+          settingsChanged();
         });
         grid.appendChild(chip);
       });
@@ -2497,8 +2942,7 @@ window.EAR_TRAINER_CONFIG = {
           if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
           chip.classList.toggle('selected');
           updateInversionAvailability();
-          renderAnswerUI();
-          saveSettings();
+          settingsChanged();
         });
         grid.appendChild(chip);
       });
@@ -2520,8 +2964,7 @@ window.EAR_TRAINER_CONFIG = {
         // Хотя бы одна ступень должна оставаться выбранной
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
-        renderAnswerUI();
-        saveSettings();
+        settingsChanged();
       });
       grid.appendChild(chip);
     });
@@ -2538,8 +2981,7 @@ window.EAR_TRAINER_CONFIG = {
         // Хотя бы одно направление должно оставаться выбранным
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
-        renderAnswerUI();
-        saveSettings();
+        settingsChanged();
       });
     });
   }
@@ -2554,8 +2996,7 @@ window.EAR_TRAINER_CONFIG = {
         // Хотя бы одна ширина должна оставаться выбранной
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
-        renderAnswerUI();
-        saveSettings();
+        settingsChanged();
       });
     });
   }
@@ -2570,8 +3011,7 @@ window.EAR_TRAINER_CONFIG = {
         // Хотя бы одна ширина должна оставаться выбранной
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
-        renderAnswerUI();
-        saveSettings();
+        settingsChanged();
       });
     });
   }
@@ -2607,8 +3047,7 @@ window.EAR_TRAINER_CONFIG = {
         // Последнюю оставшуюся выбранную октаву снять нельзя
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
-        renderOctaveAnswerRow();
-        saveSettings();
+        settingsChanged();
       });
       grid.appendChild(chip);
     });
@@ -2636,9 +3075,16 @@ window.EAR_TRAINER_CONFIG = {
 
     $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
       el.addEventListener('click', () => {
+        // Снимаем фокус с кнопки, иначе после клика мышью на клавише остаётся рамка
+        el.blur();
         if (state.mode === 'notes') checkAnswer(el.dataset.pc, el);
         else pianoNoteClicked(el.dataset.pc, el);
       });
+    });
+
+    ['intervalByNotesCheckbox', 'chordByNotesCheckbox'].forEach((id) => {
+      const cb = $(id);
+      if (cb) cb.addEventListener('change', () => { settingsChanged(); });
     });
 
     document.querySelectorAll('#modeTabs .tab-btn').forEach((btn) => {
@@ -2650,16 +3096,14 @@ window.EAR_TRAINER_CONFIG = {
         state.currentTarget = null;
         state.answered = false;
         setFeedback(null);
-        renderAnswerUI();
-        saveSettings();
+        settingsChanged();
       });
     });
 
     $('selectAllPool').addEventListener('click', () => {
       document.querySelectorAll('#pool-grid .toggle-chip').forEach((c) => c.classList.add('selected'));
       updateInversionAvailability();
-      renderAnswerUI();
-      saveSettings();
+      settingsChanged();
     });
     // Снимаем всё, но один вариант всегда остаётся выбранным (в пианино — C)
     $('selectNonePool').addEventListener('click', () => {
@@ -2668,8 +3112,7 @@ window.EAR_TRAINER_CONFIG = {
       const keep = chips.find((c) => c.dataset.pc === '0') || chips[0];
       if (keep) keep.classList.add('selected');
       updateInversionAvailability();
-      renderAnswerUI();
-      saveSettings();
+      settingsChanged();
     });
 
     $('selectAllRoot').addEventListener('click', () => {
@@ -2706,6 +3149,26 @@ window.EAR_TRAINER_CONFIG = {
     // затемнённого фона (#settingsBackdrop), как модальное окно.
     const rightPanel = $('right-panel');
     const settingsBackdrop = $('settingsBackdrop');
+    const hideActCb = $('hideActionButtonsCheckbox');
+    if (hideActCb) {
+      hideActCb.checked = settingsCache.hideActionButtons !== false;
+      const applyHideAct = () => {
+        const row = $('actionRow');
+        if (row) row.style.display = hideActCb.checked ? '' : 'none';
+      };
+      applyHideAct();
+      hideActCb.addEventListener('change', () => { applyHideAct(); saveSettings(); });
+    }
+
+    const showResCb = $('showResultCheckbox');
+    if (showResCb) {
+      showResCb.checked = settingsCache.showResult !== false;
+      showResCb.addEventListener('change', () => {
+        if (!showResCb.checked) updateNoteSeqInfo('', false);
+        saveSettings();
+      });
+    }
+
     const sidePanelPinCheckbox = $('sidePanelPinCheckbox');
 
     function isSidePanelPinned() {
@@ -2801,7 +3264,7 @@ window.EAR_TRAINER_CONFIG = {
         document.querySelectorAll('#octaveMatchSegment .segment-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         state.octaveMatch = btn.dataset.octavematch;
-        saveSettings();
+        settingsChanged();
       });
     });
 
@@ -2850,6 +3313,9 @@ window.EAR_TRAINER_CONFIG = {
     document.querySelectorAll('#modeTabs .tab-btn').forEach((b) => {
       b.classList.toggle('active', b.dataset.mode === state.mode);
     });
+
+    if ($('intervalByNotesCheckbox')) $('intervalByNotesCheckbox').checked = settingsCache.intervalByNotes !== false;
+    if ($('chordByNotesCheckbox')) $('chordByNotesCheckbox').checked = settingsCache.chordByNotes !== false;
 
     buildPoolGrid();
     buildDirectionGrid();
