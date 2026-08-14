@@ -351,6 +351,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 18px;
   }
 
   .quick-actions-left {
@@ -471,7 +472,7 @@
   .midiPanel {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .midiPanelRow {
@@ -495,6 +496,11 @@
     font-size: 13px;
     outline: none;
     text-align: right;
+  }
+
+  .midiPanelRow input#minVelocityInput {
+    width: 12.5%;
+    margin-left: 0;
   }
 
   .midiPanel .btn-action {
@@ -733,6 +739,15 @@
     justify-content: center;
   }
 
+  /* Кнопки обращений и направления интервала в окне ответа — ширина как у кнопок аккордов/интервалов */
+  #directionAnswerRow.answer-octaves-row .toggle-chip,
+  #inversionAnswerRow.answer-octaves-row .toggle-chip {
+    width: 213px;
+    flex: 0 0 213px;
+    height: 48px;
+    font-size: 13px;
+  }
+
   .segmented-control {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -807,6 +822,66 @@
   .field-label {
     font-size: 12px;
     color: var(--text-muted);
+  }
+
+  .label-with-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .info-icon {
+    position: relative;
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--chip-border);
+    background: var(--select-bg);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+    font-family: Georgia, 'Times New Roman', serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    user-select: none;
+  }
+
+  .info-icon:hover {
+    color: #e1e1e1;
+  }
+
+  .info-icon .info-tip {
+    display: none;
+  }
+
+  .info-tip-float {
+    position: fixed;
+    width: 260px;
+    background: var(--select-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-style: normal;
+    font-family: inherit;
+    line-height: 1.4;
+    color: #e1e1e1;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .12s ease;
+    z-index: 9999;
+    box-shadow: 0 6px 18px rgba(0,0,0,.45);
+    pointer-events: none;
+  }
+
+  .info-tip-float.visible {
+    opacity: 1;
+    visibility: visible;
   }
 
   select {
@@ -903,10 +978,23 @@
 
   .feedback-indicator {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 10px 0;
     min-height: 120px;
+  }
+
+  .debug-answer {
+    font-size: 70px;
+    color: rgba(85, 214, 110, 0.7);
+    margin-bottom: 4px;
+    display: none;
+    text-align: center;
+  }
+
+  .debug-answer.visible {
+    display: block;
   }
 
   .feedback-icon {
@@ -990,6 +1078,7 @@
       <div class="section">
 
         <div class="feedback-indicator">
+          <div class="debug-answer" id="debugAnswer"></div>
           <div class="feedback-icon" id="feedbackIcon"></div>
         </div>
 
@@ -1022,7 +1111,6 @@
 
         <!-- Ответ интервалами/аккордами: список названий -->
         <div class="answer-group-box" id="chipAnswerBox" style="display:none;">
-          <div class="answer-chip-title" id="chipAnswerTitle"></div>
           <div class="answer-chip-grid" id="chipAnswer"></div>
         </div>
 
@@ -1091,6 +1179,38 @@
         </div>
       </div>
 
+      <div class="section" id="spreadSection" style="display:none;">
+        <div class="section-title label-with-info">
+          <span>Ширина интервала</span>
+          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip">Насколько далеко верхняя нота интервала может быть поднята относительно нижней (на 0–6 октав сверх самого интервала). При нескольких выбранных вариантах ширина каждый раз берётся случайно.</span></span>
+        </div>
+        <div class="intervals-grid" id="spread-grid">
+          <div class="toggle-chip" data-spread="0">В одной октаве</div>
+          <div class="toggle-chip" data-spread="1">+1 октава</div>
+          <div class="toggle-chip" data-spread="2">+2 октавы</div>
+          <div class="toggle-chip" data-spread="3">+3 октавы</div>
+          <div class="toggle-chip" data-spread="4">+4 октавы</div>
+          <div class="toggle-chip" data-spread="5">+5 октав</div>
+          <div class="toggle-chip" data-spread="6">+6 октав</div>
+        </div>
+      </div>
+
+      <div class="section" id="chordSpreadSection" style="display:none;">
+        <div class="section-title label-with-info">
+          <span>Ширина аккорда</span>
+          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip">Насколько далеко верхняя нота аккорда может быть поднята относительно нижней (на 0–6 октав). Средние ноты распределяются между ними случайно, порядок нот снизу вверх сохраняется. При нескольких выбранных вариантах ширина каждый раз берётся случайно.</span></span>
+        </div>
+        <div class="intervals-grid" id="chord-spread-grid">
+          <div class="toggle-chip" data-spread="0">В одной октаве</div>
+          <div class="toggle-chip" data-spread="1">+1 октава</div>
+          <div class="toggle-chip" data-spread="2">+2 октавы</div>
+          <div class="toggle-chip" data-spread="3">+3 октавы</div>
+          <div class="toggle-chip" data-spread="4">+4 октавы</div>
+          <div class="toggle-chip" data-spread="5">+5 октав</div>
+          <div class="toggle-chip" data-spread="6">+6 октав</div>
+        </div>
+      </div>
+
       <div class="section" id="directionSection" style="display:none;">
         <div class="section-title">Направление интервала</div>
         <div class="intervals-grid" id="direction-grid">
@@ -1102,6 +1222,19 @@
       <div class="section">
         <div class="section-title">Выберите октаву или несколько октав</div>
 <div class="octaves-row" id="octave-grid"></div>
+
+        <div id="midiAnswerFields">
+          <div class="field-group">
+            <div class="label-with-info">
+              <span class="field-label">Проверка октавы</span>
+              <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip">Если выбрана «Любая» — играет та октава, что выбрана выше в меню октав, а отвечать можно клавишей в любой октаве.</span></span>
+            </div>
+            <div class="segmented-control" id="octaveMatchSegment">
+              <button class="segment-btn active" data-octavematch="any">Любая</button>
+              <button class="segment-btn" data-octavematch="exact">Точная</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="section" id="audioOutputSection">
@@ -1142,19 +1275,8 @@
               <span class="field-label">Velocity</span>
               <input type="number" id="minVelocityInput" min="1" max="127" value="100">
             </div>
-            <div class="hint-text">Нажатие клавиши засчитывается, только если её velocity не меньше указанного значения.</div>
 
             <div class="hint-text" id="midiStatus"></div>
-          </div>
-
-          <div id="midiAnswerFields">
-            <div class="field-group">
-              <span class="field-label">Проверка октавы</span>
-              <div class="segmented-control" id="octaveMatchSegment">
-                <button class="segment-btn active" data-octavematch="any">Любая</button>
-                <button class="segment-btn" data-octavematch="exact">Точная</button>
-              </div>
-            </div>
           </div>
 
           <div class="theme-row">
@@ -1212,6 +1334,9 @@ window.EAR_TRAINER_CONFIG = {
       chordStrumMs: 0,
       defaultMidiChannel: 1,
       midiAnswerDebounceMs: 350,
+      pitchBendThreshold: 1500,
+      pitchBendCenterTolerance: 200,
+      pitchBendReleaseDelayMs: 100,
     },
     window.EAR_TRAINER_CONFIG || {}
   );
@@ -1371,6 +1496,8 @@ window.EAR_TRAINER_CONFIG = {
     poolChords: null,
     inversions: null,
     intervalDirections: null,
+    intervalSpreads: null,
+    chordSpreads: null,
     rootPcs: null,
     octaves: null,
     outputMode: 'daw',
@@ -1393,6 +1520,8 @@ window.EAR_TRAINER_CONFIG = {
       settingsCache.inversions = getSelectedInversions();
     }
     settingsCache.intervalDirections = getSelectedDirections();
+    settingsCache.intervalSpreads = getSelectedSpreads();
+    settingsCache.chordSpreads = getSelectedChordSpreads();
     if (state.mode === 'intervals' || state.mode === 'chords') {
       settingsCache.rootPcs = [...document.querySelectorAll('#root-note-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.pc, 10));
     }
@@ -1412,12 +1541,13 @@ window.EAR_TRAINER_CONFIG = {
   let midiAccess = null;
   const instrumentCache = {};
   let soundfontLoaderPromise = null;
-  let activeInputNotes = new Set();
+  let activeInputNotes = new Map();
+  let midiAnswerBuffer = new Set();
   let checkDebounceTimer = null;
 
   const $ = (id) => document.getElementById(id);
   const randInt = (n) => Math.floor(Math.random() * n);
-  const randVelocity = () => randInt(Math.max(1, CFG.velocityMax - CFG.velocityMin + 1)) + CFG.velocityMin;
+  const randVelocity = () => state.minVelocity;
 
   function midiToName(m) { return NOTE_NAMES[m % 12] + (Math.floor(m / 12) - 1); }
   function pcOctaveToMidi(pc, oct) { return (oct + 1) * 12 + pc; }
@@ -1448,6 +1578,25 @@ window.EAR_TRAINER_CONFIG = {
   function getSelectedDirections() {
     return [...document.querySelectorAll('#direction-grid .toggle-chip.selected')].map((el) => el.dataset.dir);
   }
+  function getSelectedSpreads() {
+    return [...document.querySelectorAll('#spread-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.spread, 10));
+  }
+  function getSelectedChordSpreads() {
+    return [...document.querySelectorAll('#chord-spread-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.spread, 10));
+  }
+  // Раздвигаем аккорд по октавам: нижняя нота на месте, верхняя поднимается на spread октав,
+  // средние ноты получают случайное количество октав между ними (порядок нот сохраняется).
+  function applyChordSpread(intervals, spread) {
+    const n = intervals.length;
+    if (!spread || n < 2) return intervals.slice();
+    const offs = new Array(n).fill(0);
+    offs[n - 1] = spread;
+    for (let i = 1; i < n - 1; i++) {
+      offs[i] = offs[i - 1] + randInt(spread - offs[i - 1] + 1);
+    }
+    return intervals.map((s, i) => s + 12 * offs[i]);
+  }
+
   // Максимально доступное обращение среди выбранных аккордов (0 — только основной)
   function maxInversionAvailable() {
     const sel = getSelectedChords().filter((c) => INVERSION_CHORD_IDS.includes(c.id));
@@ -1515,19 +1664,23 @@ window.EAR_TRAINER_CONFIG = {
       const usePool = pickPoolAvoidingRecent(pool, (iv) => iv.id);
       const dirPool = getSelectedDirections();
       if (dirPool.length === 0) { alert('Выберите направление интервала.'); return null; }
+      const spreadPool = getSelectedSpreads();
+      if (spreadPool.length === 0) { alert('Выберите ширину интервала.'); return null; }
       for (let a = 0; a < 80; a++) {
         const pc = rootPcs[randInt(rootPcs.length)];
         const oct = octaves[randInt(octaves.length)];
         const root = pcOctaveToMidi(pc, oct);
         const iv = usePool[randInt(usePool.length)];
         const dir = dirPool[randInt(dirPool.length)];
+        const spread = spreadPool[randInt(spreadPool.length)];
+        const semis = iv.semitones + 12 * spread;
         let notes, ok;
         if (dir === 'down') {
-          const bottom = root - iv.semitones;
+          const bottom = root - semis;
           notes = [bottom, root];
           ok = bottom >= MIN_MIDI && root <= MAX_MIDI;
         } else {
-          const top = root + iv.semitones;
+          const top = root + semis;
           notes = [root, top];
           ok = root >= MIN_MIDI && top <= MAX_MIDI;
         }
@@ -1556,13 +1709,16 @@ window.EAR_TRAINER_CONFIG = {
       }
     });
     if (chordVariants.length === 0) { alert('Выберите ступень, которая подходит выбранным аккордам.'); return null; }
+    const chordSpreadPool = getSelectedChordSpreads();
+    if (chordSpreadPool.length === 0) { alert('Выберите ширину аккорда.'); return null; }
     for (let a = 0; a < 80; a++) {
       const pc = chordRootPcs[randInt(chordRootPcs.length)];
       const oct = octaves[randInt(octaves.length)];
       const root = pcOctaveToMidi(pc, oct);
       const variant = chordVariants[randInt(chordVariants.length)];
       const chord = variant.chord;
-      const notes = applyInversion(chord.intervals, variant.inv).map((s) => root + s);
+      const chordSpread = chordSpreadPool[randInt(chordSpreadPool.length)];
+      const notes = applyChordSpread(applyInversion(chord.intervals, variant.inv), chordSpread).map((s) => root + s);
       if (notes[0] >= MIN_MIDI && notes[notes.length - 1] <= MAX_MIDI) {
         rememberVariant(chord.id);
         return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, inversion: variant.inv, notes, velocities: notes.map(randVelocity) };
@@ -1578,6 +1734,45 @@ window.EAR_TRAINER_CONFIG = {
     if (target.type === 'intervals') return INTERVALS.find((i) => i.id === target.answerId).name;
     return CHORDS.find((c) => c.id === target.answerId).name;
   }
+
+  // ---------------- debug: показать правильный ответ по кнопке Z ----------------
+  let debugAnswerVisible = false;
+
+  function debugLabelForTarget(target) {
+    if (!target) return '';
+    if (target.type === 'notes') {
+      return NOTE_NAMES[parseInt(target.answerId, 10)] + target.answerOct;
+    }
+    if (target.type === 'intervals') {
+      const iv = INTERVALS.find((i) => i.id === target.answerId);
+      const rootName = NOTE_NAMES[target.answerPc] + target.answerOct;
+      const dirLabel = target.answerDir === 'down' ? 'вниз' : 'вверх';
+      return rootName + ' — ' + iv.name + ' (' + dirLabel + ')';
+    }
+    const chord = CHORDS.find((c) => c.id === target.answerId);
+    const rootName = NOTE_NAMES[target.answerPc] + target.answerOct;
+    let text = rootName + ' — ' + chord.name;
+    if (INVERSION_CHORD_IDS.includes(chord.id)) {
+      const invLabel = INVERSIONS.find((iv) => iv.i === target.inversion);
+      if (invLabel) text += ' (' + invLabel.label + ')';
+    }
+    return text;
+  }
+
+  function updateDebugAnswer() {
+    const el = $('debugAnswer');
+    if (!el) return;
+    el.textContent = state.currentTarget ? debugLabelForTarget(state.currentTarget) : '';
+    el.classList.toggle('visible', debugAnswerVisible);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code !== 'KeyZ') return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    debugAnswerVisible = !debugAnswerVisible;
+    updateDebugAnswer();
+  });
 
   // ---------------- playback: online ----------------
   function ensureAudioCtx() {
@@ -1716,36 +1911,185 @@ window.EAR_TRAINER_CONFIG = {
     attachMidiInputListener();
   }
 
+  let pitchBendDir = null; // 'up' | 'down' | null — зафиксированное направление отклонения колеса
+  let pitchBendReleaseTimer = null;
+  const PITCH_BEND_CENTER = 8192;
+
+  function handlePitchBendMessage(e) {
+    const lsb = e.data[1] || 0;
+    const msb = e.data[2] || 0;
+    const value = (msb << 7) | lsb;
+    const deviation = value - PITCH_BEND_CENTER;
+
+    if (pitchBendDir === null) {
+      if (deviation > CFG.pitchBendThreshold) pitchBendDir = 'up';
+      else if (deviation < -CFG.pitchBendThreshold) pitchBendDir = 'down';
+      return;
+    }
+
+    if (Math.abs(deviation) < CFG.pitchBendCenterTolerance) {
+      const dir = pitchBendDir;
+      pitchBendDir = null;
+      if (dir === 'up') {
+        clearTimeout(pitchBendReleaseTimer);
+        pitchBendReleaseTimer = setTimeout(() => { $('replayBtn').click(); }, CFG.pitchBendReleaseDelayMs);
+      } else if (dir === 'down') {
+        nextQuestion();
+      }
+    }
+  }
+
+  function handleMidiInputMessage(e) {
+    const [status, note, vel] = e.data;
+    const cmd = status & 0xf0;
+    if (cmd === 0x90 && vel > 0) {
+      activeInputNotes.set(note, state.minVelocity);
+      midiAnswerBuffer.add(note);
+      scheduleMidiAnswerCheck();
+    } else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
+      activeInputNotes.delete(note);
+    } else if (cmd === 0xe0) {
+      handlePitchBendMessage(e);
+    }
+  }
+
   function attachMidiInputListener() {
     if (!midiAccess) return;
     for (const input of midiAccess.inputs.values()) input.onmidimessage = null;
-    const input = midiAccess.inputs.get($('midiInputSelect').value);
-    if (!input) return;
-    input.onmidimessage = (e) => {
-      const [status, note, vel] = e.data;
-      const cmd = status & 0xf0;
-      if (cmd === 0x90 && vel > 0) {
-        if (vel < state.minVelocity) return;
-        activeInputNotes.add(note); scheduleMidiAnswerCheck();
-      }
-      else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) activeInputNotes.delete(note);
-    };
+    const chosen = midiAccess.inputs.get($('midiInputSelect').value);
+    if (chosen) {
+      chosen.onmidimessage = handleMidiInputMessage;
+    } else {
+      // Конкретный вход не выбран — слушаем все доступные MIDI-входы
+      for (const input of midiAccess.inputs.values()) input.onmidimessage = handleMidiInputMessage;
+    }
+  }
+
+  function expectedMidiNoteCount(target) {
+    if (!target) return 1;
+    if (target.type === 'notes') return 1;
+    if (target.type === 'intervals') return 2;
+    const chord = CHORDS.find((c) => c.id === target.answerId);
+    return chord ? chord.intervals.length : 3;
   }
 
   function scheduleMidiAnswerCheck() {
-    if (!state.currentTarget || state.answered) return;
+    const target = state.currentTarget;
+    if (!target || state.answered) { midiAnswerBuffer.clear(); return; }
     clearTimeout(checkDebounceTimer);
-    checkDebounceTimer = setTimeout(checkMidiAnswer, CFG.midiAnswerDebounceMs);
+    if (midiAnswerBuffer.size >= expectedMidiNoteCount(target)) { checkMidiAnswer(); }
+  }
+
+  function octaveOfMidi(m) { return Math.floor(m / 12) - 1; }
+  function pcOfMidi(m) { return ((m % 12) + 12) % 12; }
+
+  // Проверка ответа, сыгранного на MIDI-клавиатуре.
+  // Ширина интервала/аккорда не проверяется. Направление интервала определяется
+  // по порядку нажатия нот (какая нота нажата первой), а не по времени между нажатиями.
+  function midiAnswerCorrect(target, playedNotes) {
+    const notes = uniqSorted(playedNotes);
+    const pcs = uniqSorted(notes.map(pcOfMidi));
+    const exactOct = state.octaveMatch === 'exact';
+
+    if (target.type === 'notes') {
+      if (notes.length !== 1) return false;
+      if (pcs[0] !== parseInt(target.answerId, 10)) return false;
+      if (exactOct && octaveOfMidi(notes[0]) !== target.answerOct) return false;
+      return true;
+    }
+
+    if (target.type === 'intervals') {
+      if (notes.length !== 2) return false;
+      const iv = INTERVALS.find((i) => i.id === target.answerId);
+      const need = uniqSorted([target.answerPc, (target.answerPc + iv.semitones) % 12]);
+      if (!arraysEqual(pcs, need)) return false;
+      const firstNote = playedNotes[0];
+      const lastNote = playedNotes[playedNotes.length - 1];
+      if (pcOfMidi(firstNote) !== target.answerPc) return false;
+      const playedDir = lastNote > firstNote ? 'up' : (lastNote < firstNote ? 'down' : null);
+      if (playedDir !== target.answerDir) return false;
+      if (exactOct && octaveOfMidi(firstNote) !== target.answerOct) return false;
+      return true;
+    }
+
+    const chord = CHORDS.find((c) => c.id === target.answerId);
+    if (!chord) return false;
+    if (notes.length !== chord.intervals.length) return false;
+    const needChord = uniqSorted(chord.intervals.map((s) => (target.answerPc + s) % 12));
+    if (!arraysEqual(pcs, needChord)) return false;
+    // Ступень (обращение) — только для аккордов, у которых обращения есть: сверяем нижнюю ноту
+    if (INVERSION_CHORD_IDS.includes(chord.id)) {
+      const invIntervals = applyInversion(chord.intervals, target.inversion || 0);
+      const bassPc = (target.answerPc + invIntervals[0]) % 12;
+      if (pcOfMidi(notes[0]) !== bassPc) return false;
+    }
+    if (exactOct && octaveOfMidi(notes[0]) !== octaveOfMidi(uniqSorted(target.notes)[0])) return false;
+    return true;
+  }
+
+  // Определяет по сыгранным на MIDI нотам, что именно нажал пользователь,
+  // чтобы это можно было подсветить (в т.ч. если ответ неверный).
+  function analyzeMidiPlayed(target, playedNotes) {
+    const notes = uniqSorted(playedNotes);
+    const result = { choiceId: null, pc: null, oct: null, dir: null, inv: null };
+    if (!notes.length) return result;
+
+    if (target.type === 'notes') {
+      const pc = pcOfMidi(notes[0]);
+      result.choiceId = String(pc);
+      result.pc = pc;
+      result.oct = octaveOfMidi(notes[0]);
+      return result;
+    }
+
+    if (target.type === 'intervals') {
+      const firstNote = playedNotes[0];
+      result.pc = pcOfMidi(firstNote);
+      result.oct = octaveOfMidi(firstNote);
+      if (playedNotes.length >= 2) {
+        const lastNote = playedNotes[playedNotes.length - 1];
+        result.dir = lastNote > firstNote ? 'up' : (lastNote < firstNote ? 'down' : null);
+        const semis = Math.abs(lastNote - firstNote) % 12;
+        const iv = INTERVALS.find((i) => i.semitones === semis);
+        result.choiceId = iv ? iv.id : null;
+      }
+      return result;
+    }
+
+    // Аккорды: пробуем каждую сыгранную ноту как основной тон и ищем совпадение с известным аккордом
+    const pcs = uniqSorted(notes.map(pcOfMidi));
+    let bestMatch = null;
+    for (const candidateRoot of pcs) {
+      const relative = uniqSorted(pcs.map((p) => ((p - candidateRoot) % 12 + 12) % 12));
+      const found = CHORDS.find((c) => arraysEqual(uniqSorted(c.intervals.map((s) => s % 12)), relative));
+      if (found) { bestMatch = { chord: found, root: candidateRoot }; break; }
+    }
+    const rootNote = notes[0];
+    result.pc = bestMatch ? bestMatch.root : pcOfMidi(rootNote);
+    result.oct = octaveOfMidi(rootNote);
+    result.choiceId = bestMatch ? bestMatch.chord.id : null;
+    if (bestMatch && INVERSION_CHORD_IDS.includes(bestMatch.chord.id)) {
+      const bassRel = ((pcOfMidi(rootNote) - bestMatch.root) % 12 + 12) % 12;
+      const idx = bestMatch.chord.intervals.map((s) => s % 12).indexOf(bassRel);
+      result.inv = idx >= 0 ? idx : null;
+    }
+    return result;
   }
 
   function checkMidiAnswer() {
+    clearTimeout(checkDebounceTimer);
     const target = state.currentTarget;
-    if (!target || state.answered || activeInputNotes.size === 0) return;
-    const played = [...activeInputNotes];
-    let correct;
-    if (state.octaveMatch === 'exact') correct = arraysEqual(uniqSorted(played), uniqSorted(target.notes));
-    else correct = arraysEqual(uniqSorted(played.map((n) => n % 12)), uniqSorted(target.notes.map((n) => n % 12)));
-    finishAnswer(correct, target, null);
+    if (!target || state.answered) { midiAnswerBuffer.clear(); return; }
+    const played = [...midiAnswerBuffer];
+    if (played.length === 0) return;
+    midiAnswerBuffer.clear();
+    const correct = midiAnswerCorrect(target, played);
+    const guess = analyzeMidiPlayed(target, played);
+    state.pendingPc = guess.pc;
+    state.pendingOct = guess.oct;
+    state.pendingDir = guess.dir;
+    state.pendingInv = guess.inv;
+    finishAnswer(correct, target, guess.choiceId);
   }
 
   // ---------------- feedback icon ----------------
@@ -1769,8 +2113,6 @@ window.EAR_TRAINER_CONFIG = {
     const chips = $('chipAnswer');
     const chipBox = $('chipAnswerBox');
     piano.style.display = 'flex';
-    chips.style.display = state.mode === 'notes' ? 'none' : 'flex';
-    chipBox.style.display = state.mode === 'notes' ? 'none' : 'block';
     piano.querySelectorAll('.toggle-chip').forEach((el) => {
       el.classList.remove('selected', 'correct', 'incorrect', 'disabled');
       el.style.pointerEvents = 'auto';
@@ -1778,18 +2120,17 @@ window.EAR_TRAINER_CONFIG = {
     });
 
     chips.classList.remove('mode-intervals', 'mode-chords');
-    const chipTitle = $('chipAnswerTitle');
+    let showChips = state.mode !== 'notes';
     if (state.mode !== 'notes') {
       chips.innerHTML = '';
       chips.classList.add(state.mode === 'intervals' ? 'mode-intervals' : 'mode-chords');
-      if (chipTitle) {
-        chipTitle.textContent = state.mode === 'intervals'
-          ? 'Выберите интервал или несколько'
-          : 'Выберите аккорд или несколько';
-      }
       const items = state.mode === 'intervals'
         ? getSelectedIntervals().map((iv) => ({ id: iv.id, label: iv.name }))
         : getSelectedChords().map((c) => ({ id: c.id, label: c.name }));
+      if (state.mode === 'intervals' && items.length < 2) {
+        showChips = false;
+        state.pendingChoiceId = items.length === 1 ? items[0].id : null;
+      }
       items.forEach((it) => {
         const btn = document.createElement('div');
         btn.className = 'toggle-chip';
@@ -1799,6 +2140,8 @@ window.EAR_TRAINER_CONFIG = {
         chips.appendChild(btn);
       });
     }
+    chips.style.display = showChips ? 'flex' : 'none';
+    chipBox.style.display = showChips ? 'block' : 'none';
 
     renderOctaveAnswerRow();
     renderDirectionAnswerRow();
@@ -2009,8 +2352,10 @@ window.EAR_TRAINER_CONFIG = {
     state.pendingDir = null;
     state.pendingInv = null;
     activeInputNotes.clear();
+    midiAnswerBuffer.clear();
     setFeedback(null);
     renderAnswerUI();
+    updateDebugAnswer();
     playTarget(target);
   }
 
@@ -2048,7 +2393,53 @@ window.EAR_TRAINER_CONFIG = {
   function buildRootNoteGrid() {
     const selected = (settingsCache.rootPcs && settingsCache.rootPcs.length) ? new Set(settingsCache.rootPcs) : ROOT_NOTE_DEFAULT_SELECTED_PCS;
     buildPianoGrid($('root-note-grid'), selected, saveSettings, true);
+    ensureRootNoteSelection();
   }
+
+  // Страховка: в блоке "Нота, от которой строить" всегда должна остаться хотя бы одна нота
+  function ensureRootNoteSelection() {
+    const grid = $('root-note-grid');
+    if (!grid) return;
+    if (grid.querySelectorAll('.toggle-chip.selected').length === 0) {
+      const keep = grid.querySelector('.toggle-chip[data-pc="0"]') || grid.querySelector('.toggle-chip');
+      if (keep) keep.classList.add('selected');
+    }
+  }
+
+  // Блоки выбора в настройках, где всегда должен остаться хотя бы один выбранный вариант
+  const PROTECTED_GRIDS = ['root-note-grid', 'pool-grid', 'octave-grid', 'inversion-grid', 'direction-grid', 'spread-grid', 'chord-spread-grid'];
+  const PROTECTED_SELECTOR = PROTECTED_GRIDS.map((id) => '#' + id).join(', ');
+
+  function ensureGridSelection(gridId) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    const chips = [...grid.querySelectorAll('.toggle-chip')];
+    if (!chips.length) return;
+    if (chips.some((c) => c.classList.contains('selected'))) return;
+    const keep = chips.find((c) => c.dataset.pc === '0' && !c.classList.contains('disabled'))
+      || chips.find((c) => !c.classList.contains('disabled'))
+      || chips[0];
+    if (keep) keep.classList.add('selected');
+  }
+
+  function ensureAllGridSelections() { PROTECTED_GRIDS.forEach(ensureGridSelection); }
+
+  // Перехват клика до всех остальных обработчиков: снять последний выбранный вариант нельзя
+  document.addEventListener('click', (e) => {
+    if (!e.target || !e.target.closest) return;
+    const chip = e.target.closest('.toggle-chip');
+    if (!chip || !chip.classList.contains('selected')) return;
+    const grid = chip.closest(PROTECTED_SELECTOR);
+    if (!grid) return;
+    if (grid.querySelectorAll('.toggle-chip.selected').length === 1) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+  }, true);
+
+  // Страховка после любых кнопок/перестроений: ни один блок не остаётся пустым
+  document.addEventListener('click', () => { setTimeout(ensureAllGridSelections, 0); }, false);
 
   function buildPoolGrid() {
     const grid = $('pool-grid');
@@ -2057,7 +2448,9 @@ window.EAR_TRAINER_CONFIG = {
     const showRoot = state.mode === 'intervals' || state.mode === 'chords';
     $('rootNoteSection').style.display = showRoot ? 'flex' : 'none';
     $('inversionSection').style.display = state.mode === 'chords' ? 'flex' : 'none';
-    $('directionSection').style.display = state.mode === 'intervals' ? 'block' : 'none';
+    $('directionSection').style.display = state.mode === 'intervals' ? 'flex' : 'none';
+    $('spreadSection').style.display = state.mode === 'intervals' ? 'flex' : 'none';
+    $('chordSpreadSection').style.display = state.mode === 'chords' ? 'flex' : 'none';
     $('poolSectionTitle').textContent = state.mode === 'notes'
       ? 'Выберите ноту или несколько нот'
       : (state.mode === 'intervals' ? 'Выберите интервал или несколько' : 'Выберите аккорд или несколько');
@@ -2143,6 +2536,38 @@ window.EAR_TRAINER_CONFIG = {
       chip.classList.toggle('selected', isSelected);
       chip.addEventListener('click', () => {
         // Хотя бы одно направление должно оставаться выбранным
+        if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+        chip.classList.toggle('selected');
+        renderAnswerUI();
+        saveSettings();
+      });
+    });
+  }
+
+  function buildSpreadGrid() {
+    const grid = $('spread-grid');
+    const saved = (settingsCache.intervalSpreads && settingsCache.intervalSpreads.length) ? settingsCache.intervalSpreads : null;
+    grid.querySelectorAll('.toggle-chip').forEach((chip) => {
+      const isSelected = saved ? saved.includes(parseInt(chip.dataset.spread, 10)) : chip.dataset.spread === '0';
+      chip.classList.toggle('selected', isSelected);
+      chip.addEventListener('click', () => {
+        // Хотя бы одна ширина должна оставаться выбранной
+        if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+        chip.classList.toggle('selected');
+        renderAnswerUI();
+        saveSettings();
+      });
+    });
+  }
+
+  function buildChordSpreadGrid() {
+    const grid = $('chord-spread-grid');
+    const saved = (settingsCache.chordSpreads && settingsCache.chordSpreads.length) ? settingsCache.chordSpreads : null;
+    grid.querySelectorAll('.toggle-chip').forEach((chip) => {
+      const isSelected = saved ? saved.includes(parseInt(chip.dataset.spread, 10)) : chip.dataset.spread === '0';
+      chip.classList.toggle('selected', isSelected);
+      chip.addEventListener('click', () => {
+        // Хотя бы одна ширина должна оставаться выбранной
         if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
         chip.classList.toggle('selected');
         renderAnswerUI();
@@ -2256,6 +2681,7 @@ window.EAR_TRAINER_CONFIG = {
         if (c.dataset.pc === '0') c.classList.add('selected');
         else c.classList.remove('selected');
       });
+      ensureRootNoteSelection();
       saveSettings();
     });
 
@@ -2265,13 +2691,13 @@ window.EAR_TRAINER_CONFIG = {
         btn.classList.add('active');
         state.outputMode = btn.dataset.output;
         $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
-        $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
+        $('dawFields').style.display = state.outputMode === 'daw' ? 'flex' : 'none';
         saveSettings();
       });
     });
     // Привести поля вывода звука в соответствие с активной по умолчанию вкладкой (DAW)
     $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
-    $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
+    $('dawFields').style.display = state.outputMode === 'daw' ? 'flex' : 'none';
 
     // ---------------- Галочка "Настройки сбоку от меню" ----------------
     // Включена — панель настроек ведёт себя как раньше: появляется/исчезает
@@ -2427,8 +2853,11 @@ window.EAR_TRAINER_CONFIG = {
 
     buildPoolGrid();
     buildDirectionGrid();
+    buildSpreadGrid();
+    buildChordSpreadGrid();
     buildOctaveGrid();
     buildSelects();
+    ensureAllGridSelections();
 
     // Тема
     document.body.setAttribute('data-theme', settingsCache.theme);
@@ -2455,13 +2884,56 @@ window.EAR_TRAINER_CONFIG = {
 
     // Поля, зависящие от вывода звука и MIDI-ответа, применяем уже после wireEvents
     $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
-    $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
+    $('dawFields').style.display = state.outputMode === 'daw' ? 'flex' : 'none';
 
     renderAnswerUI();
     setFeedback(null);
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  function initInfoTooltips() {
+    const tip = document.createElement('div');
+    tip.className = 'info-tip-float';
+    document.body.appendChild(tip);
+    const margin = 8;
+
+    function show(icon) {
+      const src = icon.querySelector('.info-tip');
+      if (!src) return;
+      tip.textContent = src.textContent;
+      tip.classList.add('visible');
+
+      const iconRect = icon.getBoundingClientRect();
+      const tipRect = tip.getBoundingClientRect();
+
+      let left = iconRect.right - tipRect.width;
+      if (left < margin) left = margin;
+      if (left + tipRect.width > window.innerWidth - margin) {
+        left = window.innerWidth - margin - tipRect.width;
+      }
+
+      let top = iconRect.top - tipRect.height - margin;
+      if (top < margin) top = iconRect.bottom + margin;
+
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    }
+
+    function hide() {
+      tip.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.info-icon').forEach((icon) => {
+      icon.addEventListener('mouseenter', () => show(icon));
+      icon.addEventListener('mouseleave', hide);
+      icon.addEventListener('focus', () => show(icon));
+      icon.addEventListener('blur', hide);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initInfoTooltips();
+  });
 })();
 </script>
 </body>
