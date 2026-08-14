@@ -210,7 +210,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 620px;
+    width: 960px;
     max-height: 90vh;
     overflow-y: auto;
     background-color: var(--panel-bg);
@@ -228,10 +228,12 @@
   .menu-panel.right-panel {
     position: fixed;
     top: 50%;
-    left: calc(50% + 325px);
+    right: calc(50% + 325px);
     width: 540px;
-    max-height: 90vh;
+    height: 90vh;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     background-color: var(--panel-bg);
     border-radius: 12px;
     padding: 20px;
@@ -243,7 +245,7 @@
     z-index: 2;
     opacity: 0;
     visibility: hidden;
-    transform: translate(30px, -50%);
+    transform: translate(-30px, -50%);
     transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
   }
 
@@ -251,6 +253,56 @@
     opacity: 1;
     visibility: visible;
     transform: translate(0, -50%);
+  }
+
+  .menu-panel.right-panel::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ===== Режим "по центру экрана" (галочка "Настройки сбоку от меню" выключена).
+     Панель настроек вместо позиции сбоку от основного меню становится
+     обычным модальным окном по центру экрана, а фон под ней затемняется
+     (#settingsBackdrop). Включается/выключается классом .centered. ===== */
+  .menu-panel.right-panel.centered {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  .menu-panel.right-panel.centered.visible {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* Отключает анимацию перехода при переключении галочки "Настройки сбоку",
+     чтобы панель настроек просто появлялась по центру без скольжения. */
+  .menu-panel.right-panel.no-position-transition {
+    transition: none !important;
+  }
+
+  #settingsBackdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  #settingsBackdrop.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #sidePanelPinRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding-top: 4px;
+    border-top: 1px solid var(--divider-color);
   }
 
   .nav-tabs {
@@ -287,7 +339,7 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
   }
 
   .section-title {
@@ -305,8 +357,20 @@
     display: flex;
     justify-content: flex-start;
     gap: 16px;
-    margin-top: 2px;
-    margin-bottom: 2px;
+  }
+
+  /* Блок настройки: заголовок + сетка кнопок, отступы как в блоке октав */
+  .section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .quick-actions-inline {
+    display: flex;
+    gap: 16px;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   /* ===== Сетка пианино (14 колонок, как в новом дизайне) ===== */
@@ -318,7 +382,7 @@
   }
 
   .piano-grid .toggle-chip {
-    height: 38px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -327,7 +391,7 @@
   }
 
   .piano-grid .toggle-chip.black-key {
-    height: 34px;
+    height: 42px;
     font-size: 10.5px;
   }
 
@@ -348,7 +412,11 @@
   .chords-grid .toggle-chip,
   .intervals-grid .toggle-chip {
     width: auto;
-    padding: 10px 4px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
     border-radius: 6px;
     font-size: 12px;
   }
@@ -361,7 +429,7 @@
   }
 
   .octaves-row .toggle-chip {
-    flex: 1 1 calc(20% - 7px);
+    flex: 1 1 calc(14.28% - 7px);
     padding: 10px 6px;
     text-align: center;
   }
@@ -381,13 +449,56 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
+  }
+
+  #onlineFields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .midi-row {
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  /* ===== Блок MIDI-настроек (вход/выход/подключение) — внешний вид
+     как в приложении "Circle of Fifths": подписанные строки label+select
+     (select прижат вправо и занимает половину ширины), кнопка подключения
+     на всю ширину под ними. ===== */
+  .midiPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .midiPanelRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .midiPanelRow select,
+  .midiPanelRow input[type="number"] {
+    width: 50%;
+    margin-left: auto;
+    padding: 6px 8px;
+  }
+
+  .midiPanelRow input[type="number"] {
+    background-color: var(--select-bg);
+    color: #e1e1e1;
+    border: 1px solid var(--chip-border);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    text-align: right;
+  }
+
+  .midiPanel .btn-action {
+    width: 100%;
   }
 
   .theme-row {
@@ -409,6 +520,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex: 1 1 auto;
+    min-width: 220px;
+  }
+
+  .colormode-row .segmented-control {
+    flex: 1;
+  }
+
+  .colormode-row .segment-btn {
+    padding: 10px 4px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .text-btn {
@@ -452,9 +575,17 @@
   }
 
   .left-note-chip {
-    width: 72px;
-    flex: 0 0 72px;
-    padding: 8px 0;
+    width: 119px;
+    height: 66px;
+    flex: 0 0 119px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .left-note-chip.black-key {
+    height: 62px;
   }
 
   .toggle-chip:hover {
@@ -529,14 +660,14 @@
 
   .white-keys-row {
     display: flex;
-    gap: 6px;
+    gap: 7px;
     justify-content: center;
   }
 
   .black-keys-row {
     position: relative;
-    width: 540px;
-    height: 34px;
+    width: 875px;
+    height: 62px;
   }
 
   .black-keys-row .black-key {
@@ -552,43 +683,54 @@
     border: none;
   }
 
+  .answer-chip-title {
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
   .answer-chip-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     justify-content: center;
     width: 100%;
   }
 
   .answer-chip-grid .toggle-chip {
-    width: auto;
-    padding: 10px 4px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 13px;
     text-align: center;
-    flex-grow: 1;
+    flex-grow: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Размеры кнопок в окне ответа (перенесено из макета) */
-  .answer-chip-grid.mode-intervals .toggle-chip { flex-basis: 45%; min-width: 120px; }
-  .answer-chip-grid.mode-chords .toggle-chip { flex-basis: 22%; min-width: 65px; }
+  .answer-chip-grid.mode-intervals .toggle-chip { width: 213px; flex: 0 0 213px; }
+  .answer-chip-grid.mode-chords .toggle-chip { width: 213px; flex: 0 0 213px; }
 
   .answer-octaves-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 7px;
     justify-content: center;
     width: 100%;
     margin-top: 8px;
   }
 
   .answer-octaves-row .toggle-chip {
-    flex-basis: 12%;
-    min-width: 35px;
-    width: auto;
-    padding: 10px 4px;
+    width: 83px;
+    flex: 0 0 83px;
+    height: 51px;
+    padding: 0;
     font-size: 12px;
     text-align: center;
-    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .segmented-control {
@@ -659,7 +801,7 @@
   .field-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .field-label {
@@ -860,11 +1002,11 @@
         <div class="answer-group-box">
           <div class="piano-container" id="pianoAnswer">
             <div class="black-keys-row">
-              <button class="toggle-chip left-note-chip black-key" data-pc="1" style="left: 39px;">C#/Db</button>
-              <button class="toggle-chip left-note-chip black-key" data-pc="3" style="left: 117px;">D#/Eb</button>
-              <button class="toggle-chip left-note-chip black-key" data-pc="6" style="left: 273px;">F#/Gb</button>
-              <button class="toggle-chip left-note-chip black-key" data-pc="8" style="left: 351px;">G#/Ab</button>
-              <button class="toggle-chip left-note-chip black-key" data-pc="10" style="left: 429px;">A#/Bb</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="1" style="left: 63px;">C#/Db</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="3" style="left: 189px;">D#/Eb</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="6" style="left: 441px;">F#/Gb</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="8" style="left: 567px;">G#/Ab</button>
+              <button class="toggle-chip left-note-chip black-key" data-pc="10" style="left: 693px;">A#/Bb</button>
             </div>
             <div class="white-keys-row">
               <button class="toggle-chip left-note-chip" data-pc="0">C</button>
@@ -880,7 +1022,18 @@
 
         <!-- Ответ интервалами/аккордами: список названий -->
         <div class="answer-group-box" id="chipAnswerBox" style="display:none;">
+          <div class="answer-chip-title" id="chipAnswerTitle"></div>
           <div class="answer-chip-grid" id="chipAnswer"></div>
+        </div>
+
+        <!-- Направление интервала под кнопками ответа (показывается, если выбраны обе кнопки направления в настройках) -->
+        <div class="answer-group-box" id="directionAnswerBox" style="display:none;">
+          <div class="answer-octaves-row" id="directionAnswerRow"></div>
+        </div>
+
+        <!-- Обращения аккорда под кнопками ответа (показываются, если выбрано 2+ обращения в настройках) -->
+        <div class="answer-group-box" id="inversionAnswerBox" style="display:none;">
+          <div class="answer-octaves-row" id="inversionAnswerRow"></div>
         </div>
 
         <!-- Октавы под кнопками ответа (показываются, если выбрано 2+ октавы в настройках) -->
@@ -890,6 +1043,10 @@
 
       </div>
     </div>
+
+    <!-- Затемнение фона — показывается только когда панель настроек открыта
+         И галочка "Настройки сбоку от меню" выключена (режим "по центру экрана") -->
+    <div id="settingsBackdrop"></div>
 
     <!-- НАСТРОЙКИ (ПОЯВЛЯЮТСЯ ПРИ СКРОЛЛЕ ВВЕРХ) -->
     <div class="menu-panel right-panel" id="right-panel">
@@ -902,17 +1059,43 @@
         </div>
 
         <!-- Нота, от которой строить интервал/аккорд (интервалы и аккорды) -->
-        <div id="rootNoteSection" style="display:none;">
-          <div class="section-title" style="margin-top:0;">Нота, от которой строить</div>
-          <div class="piano-grid" id="root-note-grid" style="margin-bottom: 4px;"></div>
+        <div class="section-block" id="rootNoteSection" style="display:none;">
+          <div class="section-title">
+            <span id="rootNoteSectionTitle">Нота, от которой строить</span>
+            <span class="quick-actions-inline">
+              <button class="text-btn" id="selectAllRoot">Выбрать все</button>
+              <button class="text-btn" id="selectNoneRoot">Снять всё</button>
+            </span>
+          </div>
+          <div class="piano-grid" id="root-note-grid"></div>
         </div>
 
         <!-- Основной пул: ноты (пианино) / интервалы (список) / аккорды (список) -->
-        <div id="pool-grid"></div>
+        <div class="section-block">
+          <div class="section-title">
+            <span id="poolSectionTitle">Выберите ноту или несколько нот</span>
+            <span class="quick-actions-inline">
+              <button class="text-btn" id="selectAllPool">Выбрать все</button>
+              <button class="text-btn" id="selectNonePool">Снять всё</button>
+            </span>
+          </div>
+          <div id="pool-grid"></div>
+        </div>
 
-        <div class="quick-actions-left">
-          <button class="text-btn" id="selectAllPool">Выбрать все</button>
-          <button class="text-btn" id="selectNonePool">Снять всё</button>
+        <!-- Ступени (обращения) аккордов -->
+        <div class="section-block" id="inversionSection" style="display:none;">
+          <div class="section-title">
+            <span>Выберите ступени (только для мажор минор sus2 sus4 7 maj7 m7 mMaj7)</span>
+          </div>
+          <div class="chords-grid" id="inversion-grid"></div>
+        </div>
+      </div>
+
+      <div class="section" id="directionSection" style="display:none;">
+        <div class="section-title">Направление интервала</div>
+        <div class="intervals-grid" id="direction-grid">
+          <div class="toggle-chip" data-dir="up">Интервал вверх</div>
+          <div class="toggle-chip" data-dir="down">Интервал вниз</div>
         </div>
       </div>
 
@@ -937,41 +1120,39 @@
               <span class="volume-value" id="volume-val">80%</span>
             </div>
 
-            <div class="field-group" style="margin-top: 10px;">
+            <div class="field-group">
               <span class="field-label">Тембр</span>
               <select id="onlineInstrumentSelect"></select>
               <span class="hint-text">Сэмплы загружаются из сети при выборе сторонних тембров.</span>
             </div>
           </div>
 
-          <div id="dawFields" style="display:none;">
-            <div class="midi-row">
-              <button class="btn-action" id="connectMidiBtn" style="flex:none; padding:8px 14px;">Подключить MIDI</button>
-              <span class="field-label">Выход</span>
+          <div id="dawFields" class="midiPanel" style="display:none;">
+            <div class="midiPanelRow">
+              <span class="field-label">MIDI-вход</span>
+              <select id="midiInputSelect"><option>— нажмите «Подключить MIDI» —</option></select>
+            </div>
+            <div class="midiPanelRow">
+              <span class="field-label">MIDI-выход</span>
               <select id="midiOutputSelect"><option>— нажмите «Подключить MIDI» —</option></select>
             </div>
-            <div class="hint-text" id="midiStatus" style="margin-top: 6px;"></div>
+            <button class="btn-action" id="connectMidiBtn">Подключить MIDI</button>
+
+            <div class="midiPanelRow">
+              <span class="field-label">Velocity</span>
+              <input type="number" id="minVelocityInput" min="1" max="127" value="100">
+            </div>
+            <div class="hint-text">Нажатие клавиши засчитывается, только если её velocity не меньше указанного значения.</div>
+
+            <div class="hint-text" id="midiStatus"></div>
           </div>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="midiAnswerToggle">
-            <div class="custom-checkbox"></div>
-            <span class="checkbox-label">Отвечать игрой на MIDI-клавиатуре (вместо кнопок)</span>
-          </label>
-
-          <div id="midiAnswerFields" style="display:none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div class="field-group">
-                <span class="field-label">MIDI-вход</span>
-                <select id="midiInputSelect"><option>— нажмите «Подключить MIDI» —</option></select>
-              </div>
-
-              <div class="field-group">
-                <span class="field-label">Проверка октавы</span>
-                <div class="segmented-control" id="octaveMatchSegment">
-                  <button class="segment-btn active" data-octavematch="any">Любая</button>
-                  <button class="segment-btn" data-octavematch="exact">Точная</button>
-                </div>
+          <div id="midiAnswerFields">
+            <div class="field-group">
+              <span class="field-label">Проверка октавы</span>
+              <div class="segmented-control" id="octaveMatchSegment">
+                <button class="segment-btn active" data-octavematch="any">Любая</button>
+                <button class="segment-btn" data-octavematch="exact">Точная</button>
               </div>
             </div>
           </div>
@@ -993,6 +1174,12 @@
               </div>
             </div>
           </div>
+
+          <label id="sidePanelPinRow" class="checkbox-row">
+            <input type="checkbox" id="sidePanelPinCheckbox" checked>
+            <div class="custom-checkbox"></div>
+            <span class="checkbox-label">Настройки сбоку</span>
+          </label>
         </div>
       </div>
 
@@ -1074,6 +1261,15 @@ window.EAR_TRAINER_CONFIG = {
     { id: 'm(maj13)', name: 'm(maj13)', intervals: [0, 3, 7, 11, 14, 17, 21] },
   ];
 
+  // Аккорды, для которых доступны обращения
+  const INVERSION_CHORD_IDS = ['maj', 'min', 'sus2', 'sus4', '7', 'maj7', 'm7', 'mMaj7'];
+  const INVERSIONS = [
+    { i: 0, label: 'основной' },
+    { i: 1, label: '1 обращение' },
+    { i: 2, label: '2 обращение' },
+    { i: 3, label: '3 обращение' },
+  ];
+
   // 12 клавиш пианино: расположение колонок как в новом дизайне (14-колоночная сетка)
   const PIANO_KEYS = [
     { pc: 0, label: 'C', col: '1 / 3' },
@@ -1135,9 +1331,9 @@ window.EAR_TRAINER_CONFIG = {
   ];
 
   const OCTAVES = [
-    { o: 0, label: 'A0–B0' }, { o: 1, label: 'C1–B1' }, { o: 2, label: 'C2–B2' },
-    { o: 3, label: 'C3–B3' }, { o: 4, label: 'C4–B4' }, { o: 5, label: 'C5–B5' },
-    { o: 6, label: 'C6–B6' }, { o: 7, label: 'C7–B7' }, { o: 8, label: 'C8' },
+    { o: 1, label: 'C1' }, { o: 2, label: 'C2' },
+    { o: 3, label: 'C3' }, { o: 4, label: 'C4' }, { o: 5, label: 'C5' },
+    { o: 6, label: 'C6' }, { o: 7, label: 'C7' },
   ];
   const OCTAVE_DEFAULT_SELECTED = new Set([3, 4]);
 
@@ -1146,14 +1342,71 @@ window.EAR_TRAINER_CONFIG = {
     outputMode: 'daw',
     onlineInstrument: 'builtin',
     onlineVolume: 80,
-    midiAnswerEnabled: false,
     octaveMatch: 'any',
+    minVelocity: 100,
     currentTarget: null,
     pendingPc: null,
     pendingChoiceId: null,
     pendingOct: null,
+    pendingDir: null,
+    pendingInv: null,
     answered: false,
+    recentVariantIds: [],
   };
+
+  // ---------------- сохранение настроек между перезагрузками страницы ----------------
+  const SETTINGS_KEY = 'earTrainerSettings';
+
+  function loadSavedSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  const settingsCache = Object.assign({
+    mode: 'notes',
+    poolNotes: null,
+    poolIntervals: null,
+    poolChords: null,
+    inversions: null,
+    intervalDirections: null,
+    rootPcs: null,
+    octaves: null,
+    outputMode: 'daw',
+    onlineInstrument: 'builtin',
+    onlineVolume: 80,
+    octaveMatch: 'any',
+    minVelocity: 100,
+    theme: '2',
+    sidePanelPinned: true,
+  }, loadSavedSettings());
+
+  function saveSettings() {
+    settingsCache.mode = state.mode;
+    if (state.mode === 'notes') {
+      settingsCache.poolNotes = [...document.querySelectorAll('#pool-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.pc, 10));
+    } else if (state.mode === 'intervals') {
+      settingsCache.poolIntervals = [...document.querySelectorAll('#pool-grid .toggle-chip.selected')].map((el) => el.dataset.id);
+    } else if (state.mode === 'chords') {
+      settingsCache.poolChords = [...document.querySelectorAll('#pool-grid .toggle-chip.selected')].map((el) => el.dataset.id);
+      settingsCache.inversions = getSelectedInversions();
+    }
+    settingsCache.intervalDirections = getSelectedDirections();
+    if (state.mode === 'intervals' || state.mode === 'chords') {
+      settingsCache.rootPcs = [...document.querySelectorAll('#root-note-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.pc, 10));
+    }
+    settingsCache.octaves = getSelectedOctaves();
+    settingsCache.outputMode = state.outputMode;
+    settingsCache.onlineInstrument = state.onlineInstrument;
+    settingsCache.onlineVolume = state.onlineVolume;
+    settingsCache.octaveMatch = state.octaveMatch;
+    settingsCache.minVelocity = state.minVelocity;
+    settingsCache.theme = document.body.getAttribute('data-theme') || '2';
+    const pinCheckbox = $('sidePanelPinCheckbox');
+    if (pinCheckbox) settingsCache.sidePanelPinned = pinCheckbox.checked;
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settingsCache)); } catch (e) {}
+  }
 
   let audioCtx = null;
   let midiAccess = null;
@@ -1188,6 +1441,27 @@ window.EAR_TRAINER_CONFIG = {
     const ids = [...document.querySelectorAll('#pool-grid .toggle-chip.selected')].map((el) => el.dataset.id);
     return CHORDS.filter((c) => ids.includes(c.id));
   }
+  function getSelectedInversions() {
+    return [...document.querySelectorAll('#inversion-grid .toggle-chip.selected')]
+      .map((el) => parseInt(el.dataset.inv, 10)).sort((a, b) => a - b);
+  }
+  function getSelectedDirections() {
+    return [...document.querySelectorAll('#direction-grid .toggle-chip.selected')].map((el) => el.dataset.dir);
+  }
+  // Максимально доступное обращение среди выбранных аккордов (0 — только основной)
+  function maxInversionAvailable() {
+    const sel = getSelectedChords().filter((c) => INVERSION_CHORD_IDS.includes(c.id));
+    let max = 0;
+    sel.forEach((c) => { max = Math.max(max, c.intervals.length - 1); });
+    return sel.length ? max : 0;
+  }
+  // Разворот аккорда: нижние ноты переносим на октаву вверх
+  function applyInversion(intervals, inv) {
+    const arr = intervals.slice();
+    for (let k = 0; k < inv && k < arr.length; k++) arr[k] += 12;
+    return arr.sort((a, b) => a - b);
+  }
+
   function getMidiChannel() { return CFG.defaultMidiChannel || 1; }
 
   function showMidiStatus(msg, isError) {
@@ -1197,6 +1471,21 @@ window.EAR_TRAINER_CONFIG = {
   }
 
   // ---------------- generation ----------------
+  // Если вариантов (нот/интервалов/аккордов в сумме, в зависимости от режима) больше 5,
+  // исключаем из выбора те 2 варианта, что выпадали последними, чтобы не было повторов подряд.
+  function pickPoolAvoidingRecent(basePool, idFn) {
+    if (basePool.length > 5 && state.recentVariantIds.length > 0) {
+      const filtered = basePool.filter((it) => !state.recentVariantIds.includes(idFn(it)));
+      if (filtered.length > 0) return filtered;
+    }
+    return basePool;
+  }
+
+  function rememberVariant(id) {
+    state.recentVariantIds.push(id);
+    if (state.recentVariantIds.length > 2) state.recentVariantIds.shift();
+  }
+
   function generateTarget() {
     const octaves = getSelectedOctaves();
     if (octaves.length === 0) { alert('Выберите хотя бы одну октаву.'); return null; }
@@ -1204,12 +1493,14 @@ window.EAR_TRAINER_CONFIG = {
     if (state.mode === 'notes') {
       const pool = getSelectedNotePcs();
       if (pool.length === 0) { alert('Выберите хотя бы одну ноту.'); return null; }
+      const usePool = pickPoolAvoidingRecent(pool, (pc) => String(pc));
       for (let a = 0; a < 60; a++) {
-        const pc = pool[randInt(pool.length)];
+        const pc = usePool[randInt(usePool.length)];
         const oct = octaves[randInt(octaves.length)];
         const midi = pcOctaveToMidi(pc, oct);
         if (midi >= MIN_MIDI && midi <= MAX_MIDI) {
-          return { type: 'notes', answerId: String(pc), notes: [midi], velocities: [randVelocity()] };
+          rememberVariant(String(pc));
+          return { type: 'notes', answerId: String(pc), answerOct: oct, notes: [midi], velocities: [randVelocity()] };
         }
       }
       alert('Не удалось подобрать ноту в выбранном диапазоне октав.');
@@ -1221,15 +1512,28 @@ window.EAR_TRAINER_CONFIG = {
       if (pool.length === 0) { alert('Выберите хотя бы один интервал.'); return null; }
       const rootPcs = getSelectedRootPcs();
       if (rootPcs.length === 0) { alert('Выберите хотя бы одну ноту, от которой строить интервал.'); return null; }
+      const usePool = pickPoolAvoidingRecent(pool, (iv) => iv.id);
+      const dirPool = getSelectedDirections();
+      if (dirPool.length === 0) { alert('Выберите направление интервала.'); return null; }
       for (let a = 0; a < 80; a++) {
         const pc = rootPcs[randInt(rootPcs.length)];
         const oct = octaves[randInt(octaves.length)];
         const root = pcOctaveToMidi(pc, oct);
-        const iv = pool[randInt(pool.length)];
-        const top = root + iv.semitones;
-        if (root >= MIN_MIDI && top <= MAX_MIDI) {
-          const notes = [root, top];
-          return { type: 'intervals', answerId: iv.id, answerPc: pc, answerOct: oct, notes, velocities: notes.map(randVelocity) };
+        const iv = usePool[randInt(usePool.length)];
+        const dir = dirPool[randInt(dirPool.length)];
+        let notes, ok;
+        if (dir === 'down') {
+          const bottom = root - iv.semitones;
+          notes = [bottom, root];
+          ok = bottom >= MIN_MIDI && root <= MAX_MIDI;
+        } else {
+          const top = root + iv.semitones;
+          notes = [root, top];
+          ok = root >= MIN_MIDI && top <= MAX_MIDI;
+        }
+        if (ok) {
+          rememberVariant(iv.id);
+          return { type: 'intervals', answerId: iv.id, answerPc: pc, answerOct: oct, answerDir: dir, notes, velocities: notes.map(randVelocity) };
         }
       }
       alert('Не удалось подобрать интервал в выбранном диапазоне октав.');
@@ -1240,14 +1544,28 @@ window.EAR_TRAINER_CONFIG = {
     if (pool.length === 0) { alert('Выберите хотя бы один аккорд.'); return null; }
     const chordRootPcs = getSelectedRootPcs();
     if (chordRootPcs.length === 0) { alert('Выберите хотя бы одну ноту, от которой строить аккорд.'); return null; }
+    const useChordPool = pickPoolAvoidingRecent(pool, (c) => c.id);
+    const invSel = getSelectedInversions();
+    // Пары «аккорд + обращение»: обращения работают только для перечисленных аккордов
+    const chordVariants = [];
+    useChordPool.forEach((c) => {
+      if (INVERSION_CHORD_IDS.includes(c.id)) {
+        invSel.filter((iv) => iv <= c.intervals.length - 1).forEach((iv) => chordVariants.push({ chord: c, inv: iv }));
+      } else {
+        chordVariants.push({ chord: c, inv: 0 });
+      }
+    });
+    if (chordVariants.length === 0) { alert('Выберите ступень, которая подходит выбранным аккордам.'); return null; }
     for (let a = 0; a < 80; a++) {
       const pc = chordRootPcs[randInt(chordRootPcs.length)];
       const oct = octaves[randInt(octaves.length)];
       const root = pcOctaveToMidi(pc, oct);
-      const chord = pool[randInt(pool.length)];
-      const notes = chord.intervals.map((s) => root + s);
+      const variant = chordVariants[randInt(chordVariants.length)];
+      const chord = variant.chord;
+      const notes = applyInversion(chord.intervals, variant.inv).map((s) => root + s);
       if (notes[0] >= MIN_MIDI && notes[notes.length - 1] <= MAX_MIDI) {
-        return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, notes, velocities: notes.map(randVelocity) };
+        rememberVariant(chord.id);
+        return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, inversion: variant.inv, notes, velocities: notes.map(randVelocity) };
       }
     }
     alert('Не удалось подобрать аккорд в выбранном диапазоне октав — выберите больше октав.');
@@ -1406,13 +1724,16 @@ window.EAR_TRAINER_CONFIG = {
     input.onmidimessage = (e) => {
       const [status, note, vel] = e.data;
       const cmd = status & 0xf0;
-      if (cmd === 0x90 && vel > 0) { activeInputNotes.add(note); scheduleMidiAnswerCheck(); }
+      if (cmd === 0x90 && vel > 0) {
+        if (vel < state.minVelocity) return;
+        activeInputNotes.add(note); scheduleMidiAnswerCheck();
+      }
       else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) activeInputNotes.delete(note);
     };
   }
 
   function scheduleMidiAnswerCheck() {
-    if (!state.midiAnswerEnabled || !state.currentTarget || state.answered) return;
+    if (!state.currentTarget || state.answered) return;
     clearTimeout(checkDebounceTimer);
     checkDebounceTimer = setTimeout(checkMidiAnswer, CFG.midiAnswerDebounceMs);
   }
@@ -1457,9 +1778,15 @@ window.EAR_TRAINER_CONFIG = {
     });
 
     chips.classList.remove('mode-intervals', 'mode-chords');
+    const chipTitle = $('chipAnswerTitle');
     if (state.mode !== 'notes') {
       chips.innerHTML = '';
       chips.classList.add(state.mode === 'intervals' ? 'mode-intervals' : 'mode-chords');
+      if (chipTitle) {
+        chipTitle.textContent = state.mode === 'intervals'
+          ? 'Выберите интервал или несколько'
+          : 'Выберите аккорд или несколько';
+      }
       const items = state.mode === 'intervals'
         ? getSelectedIntervals().map((iv) => ({ id: iv.id, label: iv.name }))
         : getSelectedChords().map((c) => ({ id: c.id, label: c.name }));
@@ -1474,6 +1801,47 @@ window.EAR_TRAINER_CONFIG = {
     }
 
     renderOctaveAnswerRow();
+    renderDirectionAnswerRow();
+    renderInversionAnswerRow();
+  }
+
+  function renderDirectionAnswerRow() {
+    const row = $('directionAnswerRow');
+    const box = $('directionAnswerBox');
+    if (state.mode !== 'intervals') { row.style.display = 'none'; box.style.display = 'none'; return; }
+    const dirs = getSelectedDirections();
+    row.innerHTML = '';
+    if (dirs.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
+    row.style.display = 'flex';
+    box.style.display = 'block';
+    [['up', 'Интервал вверх'], ['down', 'Интервал вниз']].forEach(([d, label]) => {
+      const btn = document.createElement('div');
+      btn.className = 'toggle-chip';
+      btn.textContent = label;
+      btn.dataset.dir = d;
+      btn.addEventListener('click', () => directionAnswerClicked(d, btn));
+      row.appendChild(btn);
+    });
+  }
+
+  function renderInversionAnswerRow() {
+    const row = $('inversionAnswerRow');
+    const box = $('inversionAnswerBox');
+    if (state.mode !== 'chords') { row.style.display = 'none'; box.style.display = 'none'; return; }
+    const invSel = getSelectedInversions().filter((iv) => iv <= maxInversionAvailable());
+    row.innerHTML = '';
+    if (invSel.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
+    row.style.display = 'flex';
+    box.style.display = 'block';
+    invSel.forEach((iv) => {
+      const label = INVERSIONS.find((x) => x.i === iv).label;
+      const btn = document.createElement('div');
+      btn.className = 'toggle-chip';
+      btn.textContent = label;
+      btn.dataset.inv = iv;
+      btn.addEventListener('click', () => inversionAnswerClicked(iv, btn));
+      row.appendChild(btn);
+    });
   }
 
   function renderOctaveAnswerRow() {
@@ -1491,7 +1859,7 @@ window.EAR_TRAINER_CONFIG = {
     octaves.sort((a, b) => a - b).forEach((o) => {
       const btn = document.createElement('div');
       btn.className = 'toggle-chip';
-      btn.textContent = String(o);
+      btn.textContent = 'C' + o;
       btn.dataset.oct = o;
       btn.addEventListener('click', () => octaveAnswerClicked(o, btn));
       row.appendChild(btn);
@@ -1504,8 +1872,10 @@ window.EAR_TRAINER_CONFIG = {
     if (!target) return;
 
     if (state.mode === 'notes') {
-      const correct = id === target.answerId;
-      finishAnswer(correct, target, id);
+      state.pendingChoiceId = id;
+      el.parentElement.querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+      el.classList.add('selected');
+      tryFinishNotesAnswer(target);
       return;
     }
 
@@ -1529,18 +1899,52 @@ window.EAR_TRAINER_CONFIG = {
     state.pendingOct = oct;
     $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
     el.classList.add('selected');
+    if (state.mode === 'notes') tryFinishNotesAnswer(state.currentTarget);
+    else tryFinishCompositeAnswer(state.currentTarget);
+  }
+
+  function directionAnswerClicked(dir, el) {
+    if (state.answered) return;
+    state.pendingDir = dir;
+    $('directionAnswerRow').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+    el.classList.add('selected');
     tryFinishCompositeAnswer(state.currentTarget);
+  }
+
+  function inversionAnswerClicked(inv, el) {
+    if (state.answered) return;
+    state.pendingInv = inv;
+    $('inversionAnswerRow').querySelectorAll('.toggle-chip').forEach((c) => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tryFinishCompositeAnswer(state.currentTarget);
+  }
+
+  function tryFinishNotesAnswer(target) {
+    if (!target || state.mode !== 'notes') return;
+    const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+    if (state.pendingChoiceId === null) return;
+    if (needsOct && state.pendingOct === null) return;
+
+    const correct = state.pendingChoiceId === target.answerId
+      && (!needsOct || state.pendingOct === target.answerOct);
+    finishAnswer(correct, target, state.pendingChoiceId);
   }
 
   function tryFinishCompositeAnswer(target) {
     if (!target || state.mode === 'notes') return;
     const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
+    const needsDir = state.mode === 'intervals' && getSelectedDirections().length >= 2;
+    const needsInv = state.mode === 'chords' && getSelectedInversions().filter((iv) => iv <= maxInversionAvailable()).length >= 2;
     if (state.pendingPc === null || state.pendingChoiceId === null) return;
     if (needsOct && state.pendingOct === null) return;
+    if (needsDir && state.pendingDir === null) return;
+    if (needsInv && state.pendingInv === null) return;
 
     const correct = state.pendingChoiceId === target.answerId
       && state.pendingPc === target.answerPc
-      && (!needsOct || state.pendingOct === target.answerOct);
+      && (!needsOct || state.pendingOct === target.answerOct)
+      && (!needsDir || state.pendingDir === target.answerDir)
+      && (!needsInv || state.pendingInv === target.inversion);
     finishAnswer(correct, target, state.pendingChoiceId);
   }
 
@@ -1548,11 +1952,22 @@ window.EAR_TRAINER_CONFIG = {
     state.answered = true;
     setFeedback(correct);
 
+    if (correct) {
+      setTimeout(() => {
+        if (state.currentTarget === target && state.answered) nextQuestion();
+      }, 900);
+    }
+
     if (state.mode === 'notes') {
       $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
         el.classList.add('disabled');
         if (String(el.dataset.pc) === target.answerId) el.classList.add('correct');
         else if (chosenId !== null && el.dataset.pc === chosenId) el.classList.add('incorrect');
+      });
+      $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (String(el.dataset.oct) === String(target.answerOct)) el.classList.add('correct');
+        else if (state.pendingOct !== null && el.dataset.oct === String(state.pendingOct)) el.classList.add('incorrect');
       });
     } else {
       $('chipAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
@@ -1570,6 +1985,16 @@ window.EAR_TRAINER_CONFIG = {
         if (String(el.dataset.oct) === String(target.answerOct)) el.classList.add('correct');
         else if (state.pendingOct !== null && el.dataset.oct === String(state.pendingOct)) el.classList.add('incorrect');
       });
+      $('directionAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (el.dataset.dir === target.answerDir) el.classList.add('correct');
+        else if (state.pendingDir !== null && el.dataset.dir === state.pendingDir) el.classList.add('incorrect');
+      });
+      $('inversionAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
+        el.classList.add('disabled');
+        if (parseInt(el.dataset.inv, 10) === target.inversion) el.classList.add('correct');
+        else if (state.pendingInv !== null && parseInt(el.dataset.inv, 10) === state.pendingInv) el.classList.add('incorrect');
+      });
     }
   }
 
@@ -1581,6 +2006,8 @@ window.EAR_TRAINER_CONFIG = {
     state.pendingPc = null;
     state.pendingChoiceId = null;
     state.pendingOct = null;
+    state.pendingDir = null;
+    state.pendingInv = null;
     activeInputNotes.clear();
     setFeedback(null);
     renderAnswerUI();
@@ -1593,7 +2020,7 @@ window.EAR_TRAINER_CONFIG = {
   }
 
   // ---------------- building settings UI ----------------
-  function buildPianoGrid(grid, defaultSelectedPcs, onToggle) {
+  function buildPianoGrid(grid, defaultSelectedPcs, onToggle, protectLast) {
     grid.innerHTML = '';
     grid.className = 'piano-grid';
     // Сначала чёрные, потом белые клавиши — порядок в DOM важен для авто-раскладки грида
@@ -1605,13 +2032,22 @@ window.EAR_TRAINER_CONFIG = {
       chip.textContent = k.label;
       chip.dataset.pc = k.pc;
       chip.style.gridColumn = k.col;
-      chip.addEventListener('click', () => { chip.classList.toggle('selected'); if (onToggle) onToggle(); });
+      chip.addEventListener('click', () => {
+        // Последнюю оставшуюся выбранную ноту снять нельзя
+        if (protectLast && chip.classList.contains('selected')) {
+          const selectedCount = grid.querySelectorAll('.toggle-chip.selected').length;
+          if (selectedCount === 1) return;
+        }
+        chip.classList.toggle('selected');
+        if (onToggle) onToggle();
+      });
       grid.appendChild(chip);
     });
   }
 
   function buildRootNoteGrid() {
-    buildPianoGrid($('root-note-grid'), ROOT_NOTE_DEFAULT_SELECTED_PCS, null);
+    const selected = (settingsCache.rootPcs && settingsCache.rootPcs.length) ? new Set(settingsCache.rootPcs) : ROOT_NOTE_DEFAULT_SELECTED_PCS;
+    buildPianoGrid($('root-note-grid'), selected, saveSettings, true);
   }
 
   function buildPoolGrid() {
@@ -1619,44 +2055,136 @@ window.EAR_TRAINER_CONFIG = {
     grid.innerHTML = '';
 
     const showRoot = state.mode === 'intervals' || state.mode === 'chords';
-    $('rootNoteSection').style.display = showRoot ? 'block' : 'none';
-    if (showRoot) buildRootNoteGrid();
+    $('rootNoteSection').style.display = showRoot ? 'flex' : 'none';
+    $('inversionSection').style.display = state.mode === 'chords' ? 'flex' : 'none';
+    $('directionSection').style.display = state.mode === 'intervals' ? 'block' : 'none';
+    $('poolSectionTitle').textContent = state.mode === 'notes'
+      ? 'Выберите ноту или несколько нот'
+      : (state.mode === 'intervals' ? 'Выберите интервал или несколько' : 'Выберите аккорд или несколько');
+    if (showRoot) {
+      buildRootNoteGrid();
+      $('rootNoteSectionTitle').textContent = state.mode === 'intervals'
+        ? 'Нота, от которой строить интервал'
+        : 'Нота, от которой строить аккорд';
+    }
 
     if (state.mode === 'notes') {
-      buildPianoGrid(grid, NOTE_POOL_DEFAULT_SELECTED_PCS, renderAnswerUI);
+      const selected = (settingsCache.poolNotes && settingsCache.poolNotes.length) ? new Set(settingsCache.poolNotes) : NOTE_POOL_DEFAULT_SELECTED_PCS;
+      buildPianoGrid(grid, selected, () => { renderAnswerUI(); saveSettings(); });
     } else if (state.mode === 'intervals') {
       grid.className = 'intervals-grid';
+      const savedIds = (settingsCache.poolIntervals && settingsCache.poolIntervals.length) ? settingsCache.poolIntervals : null;
       INTERVALS.forEach((iv) => {
+        const isSelected = savedIds ? savedIds.includes(iv.id) : true;
         const chip = document.createElement('div');
-        chip.className = 'toggle-chip selected';
+        chip.className = 'toggle-chip' + (isSelected ? ' selected' : '');
         chip.textContent = iv.name;
         chip.dataset.id = iv.id;
-        chip.addEventListener('click', () => { chip.classList.toggle('selected'); renderAnswerUI(); });
+        chip.addEventListener('click', () => {
+          // Последний оставшийся выбранный интервал снять нельзя
+          if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+          chip.classList.toggle('selected');
+          renderAnswerUI();
+          saveSettings();
+        });
         grid.appendChild(chip);
       });
     } else {
       grid.className = 'chords-grid';
+      const savedIds = (settingsCache.poolChords && settingsCache.poolChords.length) ? settingsCache.poolChords : null;
       CHORDS.forEach((c) => {
         const def = c.id === 'maj' || c.id === 'min';
+        const isSelected = savedIds ? savedIds.includes(c.id) : def;
         const chip = document.createElement('div');
-        chip.className = 'toggle-chip' + (def ? ' selected' : '');
+        chip.className = 'toggle-chip' + (isSelected ? ' selected' : '');
         chip.textContent = c.name;
         chip.dataset.id = c.id;
-        chip.addEventListener('click', () => { chip.classList.toggle('selected'); renderAnswerUI(); });
+        chip.addEventListener('click', () => {
+          // Последний оставшийся выбранный аккорд снять нельзя
+          if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+          chip.classList.toggle('selected');
+          updateInversionAvailability();
+          renderAnswerUI();
+          saveSettings();
+        });
         grid.appendChild(chip);
       });
+      buildInversionGrid();
+    }
+  }
+
+  function buildInversionGrid() {
+    const grid = $('inversion-grid');
+    grid.innerHTML = '';
+    const saved = (settingsCache.inversions && settingsCache.inversions.length) ? settingsCache.inversions : null;
+    INVERSIONS.forEach((inv) => {
+      const isSelected = saved ? saved.includes(inv.i) : inv.i === 0;
+      const chip = document.createElement('div');
+      chip.className = 'toggle-chip' + (isSelected ? ' selected' : '');
+      chip.textContent = inv.label;
+      chip.dataset.inv = inv.i;
+      chip.addEventListener('click', () => {
+        // Хотя бы одна ступень должна оставаться выбранной
+        if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+        chip.classList.toggle('selected');
+        renderAnswerUI();
+        saveSettings();
+      });
+      grid.appendChild(chip);
+    });
+    updateInversionAvailability();
+  }
+
+  function buildDirectionGrid() {
+    const grid = $('direction-grid');
+    const saved = (settingsCache.intervalDirections && settingsCache.intervalDirections.length) ? settingsCache.intervalDirections : null;
+    grid.querySelectorAll('.toggle-chip').forEach((chip) => {
+      const isSelected = saved ? saved.includes(chip.dataset.dir) : chip.dataset.dir === 'up';
+      chip.classList.toggle('selected', isSelected);
+      chip.addEventListener('click', () => {
+        // Хотя бы одно направление должно оставаться выбранным
+        if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+        chip.classList.toggle('selected');
+        renderAnswerUI();
+        saveSettings();
+      });
+    });
+  }
+
+  // Недоступные обращения (например 3-е у трезвучий) делаем ненажимаемыми
+  function updateInversionAvailability() {
+    const grid = $('inversion-grid');
+    if (!grid || grid.children.length === 0 || state.mode !== 'chords') return;
+    const max = maxInversionAvailable();
+    grid.querySelectorAll('.toggle-chip').forEach((chip) => {
+      const inv = parseInt(chip.dataset.inv, 10);
+      const off = inv > max;
+      chip.classList.toggle('disabled', off);
+      if (off) chip.classList.remove('selected');
+    });
+    if (grid.querySelectorAll('.toggle-chip.selected').length === 0) {
+      const base = grid.querySelector('.toggle-chip[data-inv="0"]');
+      if (base) base.classList.add('selected');
     }
   }
 
   function buildOctaveGrid() {
     const grid = $('octave-grid');
     grid.innerHTML = '';
+    const savedOcts = settingsCache.octaves;
     OCTAVES.forEach((o) => {
+      const isSelected = savedOcts ? savedOcts.includes(o.o) : OCTAVE_DEFAULT_SELECTED.has(o.o);
       const chip = document.createElement('div');
-      chip.className = 'toggle-chip' + (OCTAVE_DEFAULT_SELECTED.has(o.o) ? ' selected' : '');
+      chip.className = 'toggle-chip' + (isSelected ? ' selected' : '');
       chip.textContent = o.label;
       chip.dataset.oct = o.o;
-      chip.addEventListener('click', () => { chip.classList.toggle('selected'); renderOctaveAnswerRow(); });
+      chip.addEventListener('click', () => {
+        // Последнюю оставшуюся выбранную октаву снять нельзя
+        if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
+        chip.classList.toggle('selected');
+        renderOctaveAnswerRow();
+        saveSettings();
+      });
       grid.appendChild(chip);
     });
   }
@@ -1672,7 +2200,7 @@ window.EAR_TRAINER_CONFIG = {
       opt.value = id; opt.textContent = name + ' (сэмпл из интернета)';
       onlineSel.appendChild(opt);
     });
-    onlineSel.addEventListener('change', (e) => { state.onlineInstrument = e.target.value; });
+    onlineSel.addEventListener('change', (e) => { state.onlineInstrument = e.target.value; saveSettings(); });
 
   }
 
@@ -1698,17 +2226,37 @@ window.EAR_TRAINER_CONFIG = {
         state.answered = false;
         setFeedback(null);
         renderAnswerUI();
-        $('audioOutputSection').style.display = state.mode === 'notes' ? 'flex' : 'none';
+        saveSettings();
       });
     });
 
     $('selectAllPool').addEventListener('click', () => {
       document.querySelectorAll('#pool-grid .toggle-chip').forEach((c) => c.classList.add('selected'));
+      updateInversionAvailability();
       renderAnswerUI();
+      saveSettings();
     });
+    // Снимаем всё, но один вариант всегда остаётся выбранным (в пианино — C)
     $('selectNonePool').addEventListener('click', () => {
-      document.querySelectorAll('#pool-grid .toggle-chip').forEach((c) => c.classList.remove('selected'));
+      const chips = [...document.querySelectorAll('#pool-grid .toggle-chip')];
+      chips.forEach((c) => c.classList.remove('selected'));
+      const keep = chips.find((c) => c.dataset.pc === '0') || chips[0];
+      if (keep) keep.classList.add('selected');
+      updateInversionAvailability();
       renderAnswerUI();
+      saveSettings();
+    });
+
+    $('selectAllRoot').addEventListener('click', () => {
+      document.querySelectorAll('#root-note-grid .toggle-chip').forEach((c) => c.classList.add('selected'));
+      saveSettings();
+    });
+    $('selectNoneRoot').addEventListener('click', () => {
+      document.querySelectorAll('#root-note-grid .toggle-chip').forEach((c) => {
+        if (c.dataset.pc === '0') c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+      saveSettings();
     });
 
     document.querySelectorAll('#outputSegment .segment-btn').forEach((btn) => {
@@ -1718,33 +2266,108 @@ window.EAR_TRAINER_CONFIG = {
         state.outputMode = btn.dataset.output;
         $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
         $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
+        saveSettings();
       });
     });
     // Привести поля вывода звука в соответствие с активной по умолчанию вкладкой (DAW)
     $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
     $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
 
+    // ---------------- Галочка "Настройки сбоку от меню" ----------------
+    // Включена — панель настроек ведёт себя как раньше: появляется/исчезает
+    // сбоку от основного меню без затемнения фона.
+    // Выключена — панель настроек открывается по центру экрана поверх
+    // затемнённого фона (#settingsBackdrop), как модальное окно.
+    const rightPanel = $('right-panel');
+    const settingsBackdrop = $('settingsBackdrop');
+    const sidePanelPinCheckbox = $('sidePanelPinCheckbox');
+
+    function isSidePanelPinned() {
+      return sidePanelPinCheckbox ? sidePanelPinCheckbox.checked : true;
+    }
+
+    function applySidePanelPinMode(skipAnimation) {
+      if (skipAnimation) rightPanel.classList.add('no-position-transition');
+      rightPanel.classList.toggle('centered', !isSidePanelPinned());
+      if (skipAnimation) {
+        // Форсируем применение стилей без анимации, затем возвращаем переходы обратно.
+        void rightPanel.offsetHeight;
+        rightPanel.classList.remove('no-position-transition');
+      }
+      syncSettingsBackdrop();
+    }
+
+    function syncSettingsBackdrop() {
+      const shouldShow = rightPanel.classList.contains('visible') && !isSidePanelPinned();
+      settingsBackdrop.classList.toggle('visible', shouldShow);
+    }
+
+    function showSettingsPanel() {
+      rightPanel.classList.add('visible');
+      syncSettingsBackdrop();
+    }
+
+    function hideSettingsPanel() {
+      rightPanel.classList.remove('visible');
+      syncSettingsBackdrop();
+    }
+
+    if (sidePanelPinCheckbox) {
+      sidePanelPinCheckbox.checked = settingsCache.sidePanelPinned !== false;
+      sidePanelPinCheckbox.addEventListener('change', () => {
+        applySidePanelPinMode(!sidePanelPinCheckbox.checked);
+        saveSettings();
+      });
+    }
+    applySidePanelPinMode();
+
+    // Клик по затемнённому фону закрывает панель настроек (только в режиме "по центру")
+    settingsBackdrop.addEventListener('click', () => {
+      hideSettingsPanel();
+    });
+
     // Показ/скрытие панели настроек колесом мыши (как в gemini-menu)
     window.addEventListener('wheel', (e) => {
-      const rightPanel = $('right-panel');
+      // Если курсор над самой панелью настроек — просто прокручиваем её, не закрываем
+      if (rightPanel.contains(e.target)) {
+        return;
+      }
       if (e.deltaY < 0) {
-        rightPanel.classList.add('visible');
+        showSettingsPanel();
       } else if (e.deltaY > 0) {
-        rightPanel.classList.remove('visible');
+        hideSettingsPanel();
+        if (state.answered) nextQuestion();
+      }
+    });
+
+    // Пробел — переход к новому вопросу (актуально после неправильного ответа,
+    // когда авто-переход не срабатывает)
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (state.answered) {
+        e.preventDefault();
+        nextQuestion();
       }
     });
 
     $('volumeSlider').addEventListener('input', (e) => {
       state.onlineVolume = parseInt(e.target.value, 10);
       $('volume-val').textContent = e.target.value + '%';
+      saveSettings();
     });
 
     $('connectMidiBtn').addEventListener('click', initMIDI);
     $('midiInputSelect').addEventListener('change', attachMidiInputListener);
 
-    $('midiAnswerToggle').addEventListener('change', (e) => {
-      state.midiAnswerEnabled = e.target.checked;
-      $('midiAnswerFields').style.display = state.midiAnswerEnabled ? 'block' : 'none';
+    $('minVelocityInput').addEventListener('change', (e) => {
+      let v = parseInt(e.target.value, 10);
+      if (isNaN(v)) v = 100;
+      v = Math.min(127, Math.max(1, v));
+      e.target.value = v;
+      state.minVelocity = v;
+      saveSettings();
     });
 
     document.querySelectorAll('#octaveMatchSegment .segment-btn').forEach((btn) => {
@@ -1752,11 +2375,13 @@ window.EAR_TRAINER_CONFIG = {
         document.querySelectorAll('#octaveMatchSegment .segment-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         state.octaveMatch = btn.dataset.octavematch;
+        saveSettings();
       });
     });
 
     $('themeSelect').addEventListener('change', (e) => {
       document.body.setAttribute('data-theme', e.target.value);
+      saveSettings();
     });
 
     document.querySelectorAll('#colorModeSegment .segment-btn').forEach((btn) => {
@@ -1793,10 +2418,45 @@ window.EAR_TRAINER_CONFIG = {
         });
       }
     } catch (e) {}
+
+    // Применяем сохранённый режим до построения сеток нот/интервалов/аккордов
+    state.mode = settingsCache.mode;
+    document.querySelectorAll('#modeTabs .tab-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.mode === state.mode);
+    });
+
     buildPoolGrid();
+    buildDirectionGrid();
     buildOctaveGrid();
     buildSelects();
+
+    // Тема
+    document.body.setAttribute('data-theme', settingsCache.theme);
+    $('themeSelect').value = settingsCache.theme;
+
+    // Вывод звука и связанные поля
+    state.outputMode = settingsCache.outputMode;
+    document.querySelectorAll('#outputSegment .segment-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.output === state.outputMode);
+    });
+    state.onlineInstrument = settingsCache.onlineInstrument;
+    $('onlineInstrumentSelect').value = settingsCache.onlineInstrument;
+    state.onlineVolume = settingsCache.onlineVolume;
+    $('volumeSlider').value = settingsCache.onlineVolume;
+    $('volume-val').textContent = settingsCache.onlineVolume + '%';
+    state.octaveMatch = settingsCache.octaveMatch;
+    document.querySelectorAll('#octaveMatchSegment .segment-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.octavematch === state.octaveMatch);
+    });
+    state.minVelocity = settingsCache.minVelocity;
+    $('minVelocityInput').value = state.minVelocity;
+
     wireEvents();
+
+    // Поля, зависящие от вывода звука и MIDI-ответа, применяем уже после wireEvents
+    $('onlineFields').style.display = state.outputMode === 'online' ? 'block' : 'none';
+    $('dawFields').style.display = state.outputMode === 'daw' ? 'block' : 'none';
+
     renderAnswerUI();
     setFeedback(null);
   }
