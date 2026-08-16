@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="pageTitle">Ear Trainer — тренажёр слуха (MIDI/DAW)</title>
+<title data-i18n="pageTitle">Тренировка слуха</title>
 <style>
   /* ===== Темы ===== */
   /* Тема №2 — серо-жёлтая, перенесена из Circle of Fifths (тема №2 в списке).
@@ -891,14 +891,17 @@
 
   /* Подпись под пианино при наборе интервала/аккорда нотами */
   .note-seq-info {
-    display: none;
+    display: block;
     width: 100%;
     margin-top: 2px;
     text-align: center;
     font-size: 13px;
+    line-height: 1.3;
+    min-height: 1.3em;
     color: var(--text-hint);
+    visibility: hidden;
   }
-  .note-seq-info.visible { display: block; }
+  .note-seq-info.visible { visibility: visible; }
   .note-seq-info.bad {
     color: var(--bad-color);
     text-shadow: var(--bad-text-glow);
@@ -1263,6 +1266,100 @@
     color: var(--fg-text);
   }
 
+  /* ===================================================================
+     МОБИЛЬНАЯ ВЕРСТКА
+     Все правила ниже действуют только на экранах шириной до 900px,
+     поэтому вид и поведение версии для ПК не меняются.
+     Масштабирование щипком (pinch to zoom) не отключается.
+     =================================================================== */
+  @media (max-width: 900px) {
+
+    /* Главное меню — во всю ширину экрана */
+    .menu-panel.left-panel {
+      width: calc(100vw - 10px);
+      max-width: calc(100vw - 10px);
+      max-height: 96vh;
+      padding: 16px 8px 12px;
+      gap: 12px;
+      border-radius: 10px;
+    }
+
+    /* Панель настроек всегда по центру и во всю ширину,
+       независимо от выбранного положения (слева/по центру/справа) */
+    .menu-panel.right-panel,
+    .menu-panel.right-panel.centered,
+    .menu-panel.right-panel.right-side {
+      width: calc(100vw - 10px);
+      max-width: calc(100vw - 10px);
+      height: 92vh;
+      top: 50%;
+      left: 50%;
+      right: auto;
+      padding: 14px 10px;
+      gap: 14px;
+      transform: translate(-50%, -50%) scale(0.97);
+    }
+    .menu-panel.right-panel.visible,
+    .menu-panel.right-panel.centered.visible,
+    .menu-panel.right-panel.right-side.visible {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Пианино в окне ответа — масштабируется скриптом под ширину экрана */
+    .piano-container {
+      transform-origin: top center;
+    }
+
+    /* Кнопки интервалов/аккордов в окне ответа — по 2 в ряд */
+    .answer-chip-grid.mode-intervals .toggle-chip,
+    .answer-chip-grid.mode-chords .toggle-chip,
+    #directionAnswerRow.answer-octaves-row .toggle-chip,
+    #inversionAnswerRow.answer-octaves-row .toggle-chip {
+      width: auto;
+      flex: 1 1 calc(50% - 8px);
+      min-width: 0;
+      max-width: calc(50% - 4px);
+    }
+
+    .answer-octaves-row .toggle-chip {
+      width: auto;
+      flex: 1 1 calc(25% - 7px);
+      max-width: calc(25% - 6px);
+      height: 46px;
+    }
+
+    .answer-group-box { padding: 8px 2px; }
+
+    .action-row { width: 100%; max-width: 340px; }
+
+    .feedback-indicator { min-height: 96px; }
+    .feedback-icon { width: 74px; height: 74px; font-size: 62px; }
+    .debug-answer { font-size: 20px; }
+    .note-seq-info { font-size: 12px; }
+
+    /* Настройки: сетки поплотнее, чтобы всё влезало */
+    .notes-flex-container.chord-grid { grid-template-columns: repeat(3, 1fr); }
+    .chords-grid { grid-template-columns: repeat(3, 1fr); }
+    .piano-grid { grid-template-columns: repeat(7, 1fr); column-gap: 4px; }
+    .octaves-row .toggle-chip { flex: 1 1 calc(25% - 8px); }
+    .nav-tabs { gap: 6px; }
+    .tab-btn { font-size: 13px; padding: 10px 2px; }
+    .section-title { flex-wrap: wrap; gap: 4px 10px; }
+    .quick-actions-inline { gap: 12px; }
+    .theme-row select { max-width: 100%; }
+    .midiPanelRow { flex-wrap: wrap; }
+    .settings-box { padding: 12px; gap: 14px; }
+    .info-tip-float { max-width: calc(100vw - 20px); }
+
+    /* Отладочная панель нажатых нот (открывается клавишей Z) */
+    .debug-log-panel {
+      left: auto;
+      right: 5px;
+      width: 42vw;
+      max-height: 60vh;
+    }
+  }
+
 </style>
 </head>
 <body data-theme="1">
@@ -1613,7 +1710,7 @@ window.EAR_TRAINER_CONFIG = {
   // ---------------- локализация интерфейса (ru / en / zh) ----------------
   const I18N = {
     ru: {
-      pageTitle: 'Ear Trainer — тренажёр слуха (MIDI/DAW)',
+      pageTitle: 'Тренировка слуха',
       debugPressedNotes: 'Нажатые ноты',
       nextQuestion: 'Новый вопрос',
       replay: 'Повторить',
@@ -1705,7 +1802,7 @@ window.EAR_TRAINER_CONFIG = {
       inversionFallback: 'обращение ',
     },
     en: {
-      pageTitle: 'Ear Trainer (MIDI/DAW)',
+      pageTitle: 'Ear Training',
       debugPressedNotes: 'Pressed notes',
       nextQuestion: 'Next question',
       replay: 'Replay',
@@ -1797,7 +1894,7 @@ window.EAR_TRAINER_CONFIG = {
       inversionFallback: 'inversion ',
     },
     zh: {
-      pageTitle: 'Ear Trainer 听力训练（MIDI/DAW）',
+      pageTitle: '听力训练',
       debugPressedNotes: '已按下的音符',
       nextQuestion: '下一题',
       replay: '重播',
@@ -1929,6 +2026,7 @@ window.EAR_TRAINER_CONFIG = {
     const dawBtn = document.querySelector('#outputSegment [data-output="daw"]');
     if (dawBtn) dawBtn.textContent = t('outputDAW');
     document.documentElement.setAttribute('lang', getLang());
+    document.title = t('pageTitle');
   }
 
   function getNoteNaming() { return (state.noteNaming === 'solfege') ? 'solfege' : 'ABC'; }
@@ -3875,6 +3973,92 @@ window.EAR_TRAINER_CONFIG = {
     window.addEventListener('auxclick', (e) => {
       if (e.button === 1) e.preventDefault();
     });
+
+    /* ===== МОБИЛЬНОЕ УПРАВЛЕНИЕ =====
+       Тап двумя пальцами одновременно — открыть/закрыть меню настроек.
+       Если пальцы двигаются (щипок для масштабирования) — тап не засчитывается,
+       поэтому pinch to zoom работает как обычно. */
+    (function setupTwoFingerTap() {
+      let candidate = false;      // сейчас идёт возможный тап двумя пальцами
+      let startTime = 0;
+      let startPoints = null;
+      let suppressClickUntil = 0;
+
+      const MAX_TAP_MS = 400;     // максимум времени на тап
+      const MAX_MOVE_PX = 20;     // допустимое смещение пальцев
+
+      document.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          candidate = true;
+          startTime = Date.now();
+          startPoints = [
+            { x: e.touches[0].clientX, y: e.touches[0].clientY },
+            { x: e.touches[1].clientX, y: e.touches[1].clientY }
+          ];
+        } else if (e.touches.length > 2) {
+          candidate = false;
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        if (!candidate || !startPoints || e.touches.length !== 2) return;
+        for (let i = 0; i < 2; i++) {
+          const dx = e.touches[i].clientX - startPoints[i].x;
+          const dy = e.touches[i].clientY - startPoints[i].y;
+          if (Math.hypot(dx, dy) > MAX_MOVE_PX) { candidate = false; return; }
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        if (!candidate) return;
+        // Ждём, пока оба пальца оторвутся
+        if (e.touches.length > 0) return;
+        candidate = false;
+        if (Date.now() - startTime > MAX_TAP_MS) return;
+
+        // Гасим случайное нажатие кнопки/клавиши пианино под пальцами
+        suppressClickUntil = Date.now() + 700;
+
+        if (rightPanel.classList.contains('visible')) {
+          hideSettingsPanel();
+        } else {
+          showSettingsPanel();
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchcancel', () => { candidate = false; }, { passive: true });
+
+      document.addEventListener('click', (e) => {
+        if (Date.now() < suppressClickUntil) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }, true);
+    })();
+
+    /* Пианино в окне ответа имеет фиксированную ширину 875px.
+       На узких экранах уменьшаем его целиком, чтобы влезало без прокрутки. */
+    (function setupPianoScaling() {
+      const piano = document.getElementById('pianoAnswer');
+      if (!piano) return;
+      const NATURAL_WIDTH = 875;
+
+      function fit() {
+        if (window.innerWidth > 900) {
+          piano.style.transform = '';
+          piano.style.marginBottom = '';
+          return;
+        }
+        const available = Math.max(200, window.innerWidth - 20);
+        const scale = Math.min(1, available / NATURAL_WIDTH);
+        piano.style.transform = 'scale(' + scale + ')';
+        piano.style.marginBottom = -(piano.offsetHeight * (1 - scale)) + 'px';
+      }
+
+      fit();
+      window.addEventListener('resize', fit);
+      window.addEventListener('orientationchange', () => setTimeout(fit, 150));
+    })();
 
     document.addEventListener('keydown', (e) => {
       if (e.code !== 'KeyY') return;
