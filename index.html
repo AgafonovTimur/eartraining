@@ -1340,7 +1340,21 @@
     /* Настройки: сетки поплотнее, чтобы всё влезало */
     .notes-flex-container.chord-grid { grid-template-columns: repeat(3, 1fr); }
     .chords-grid { grid-template-columns: repeat(3, 1fr); }
-    .piano-grid { grid-template-columns: repeat(7, 1fr); column-gap: 4px; }
+    /* Пианино в настройках: верхний ряд — 5 диезов/бемолей одного размера,
+       нижний ряд — 7 белых нот одного размера */
+    .piano-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .piano-grid .toggle-chip.black-key {
+      flex: 0 0 calc(20% - 5px);
+      max-width: calc(20% - 5px);
+    }
+    .piano-grid .toggle-chip:not(.black-key) {
+      flex: 0 0 calc(14.2857% - 6px);
+      max-width: calc(14.2857% - 6px);
+    }
     .octaves-row .toggle-chip { flex: 1 1 calc(25% - 8px); }
     .nav-tabs { gap: 6px; }
     .tab-btn { font-size: 13px; padding: 10px 2px; }
