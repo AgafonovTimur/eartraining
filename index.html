@@ -3411,6 +3411,8 @@ window.EAR_TRAINER_CONFIG = {
         const isRight = idx !== -1 && state.pendingSeq[idx] === pc;
         if (isRight) el.classList.add('correct');
         else if (state.pendingSeq.includes(pc)) el.classList.add('incorrect');
+        // Ноты правильного ответа, которые не нажимали, — тоже зелёные.
+        else if (idx !== -1) el.classList.add('correct');
       });
       $('octaveAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
         el.classList.add('disabled');
