@@ -3997,40 +3997,86 @@ window.EAR_TRAINER_CONFIG = {
     (function setupTwoFingerTap() {
       let candidate = false;      // сейчас идёт возможный тап двумя пальцами
       let startTime = 0;
-      let startPoints = null;
+      let startScale = 1;
+      let startPoints = null;     // стартовые координаты по identifier пальца
+      let lastPoints = null;      // последние известные координаты
       let suppressClickUntil = 0;
 
-      const MAX_TAP_MS = 400;     // максимум времени на тап
+      const MAX_TAP_MS = 800;     // максимум времени на тап
       const MAX_MOVE_PX = 20;     // допустимое смещение пальцев
+      const MAX_PINCH_PX = 20;    // изменение расстояния между пальцами: щипок, а не тап
+      const MAX_SCALE_DIFF = 0.05; // 5% — изменение масштаба страницы: зум, а не тап
+
+      /* Текущий масштаб страницы (pinch-to-zoom браузера). Сравнивается начало
+         жеста с концом, а НЕ со 100%: если страница уже была увеличена и во
+         время тапа масштаб не менялся — тап засчитывается как обычно. */
+      function currentScale() {
+        return (window.visualViewport && window.visualViewport.scale) || 1;
+      }
+
+      function trackPoints(touchList) {
+        for (let i = 0; i < touchList.length; i++) {
+          const t = touchList[i];
+          if (!(t.identifier in startPoints)) startPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+          lastPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+        }
+      }
+
+      /* Расстояние между двумя пальцами — «размах». Если размах в начале и в
+         конце жеста заметно разный, пальцы сводили или разводили. */
+      function spread(map) {
+        const pts = Object.values(map);
+        if (pts.length < 2) return 0;
+        return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      }
+
+      /* Проверка «жест сдвинулся». Вызывается и на touchmove, и на touchend по
+         changedTouches: во время системного зума браузер может вообще перестать
+         присылать touchmove, и тогда единственные достоверные координаты
+         приходят в момент отрыва пальцев. */
+      function checkMoved(touchList) {
+        if (!candidate) return;
+        for (let i = 0; i < touchList.length; i++) {
+          const t = touchList[i];
+          lastPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+          const s = startPoints[t.identifier];
+          if (!s) continue;
+          if (Math.hypot(t.clientX - s.x, t.clientY - s.y) > MAX_MOVE_PX) { candidate = false; return; }
+        }
+        if (Object.keys(startPoints).length >= 2 && Object.keys(lastPoints).length >= 2) {
+          if (Math.abs(spread(lastPoints) - spread(startPoints)) > MAX_PINCH_PX) { candidate = false; }
+        }
+      }
 
       document.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
           candidate = true;
           startTime = Date.now();
-          startPoints = [
-            { x: e.touches[0].clientX, y: e.touches[0].clientY },
-            { x: e.touches[1].clientX, y: e.touches[1].clientY }
-          ];
+          startScale = currentScale();
+          startPoints = {};
+          lastPoints = {};
+          trackPoints(e.touches);
         } else if (e.touches.length > 2) {
           candidate = false;
         }
       }, { passive: true });
 
       document.addEventListener('touchmove', (e) => {
-        if (!candidate || !startPoints || e.touches.length !== 2) return;
-        for (let i = 0; i < 2; i++) {
-          const dx = e.touches[i].clientX - startPoints[i].x;
-          const dy = e.touches[i].clientY - startPoints[i].y;
-          if (Math.hypot(dx, dy) > MAX_MOVE_PX) { candidate = false; return; }
-        }
+        if (!candidate || !startPoints) return;
+        checkMoved(e.touches);
       }, { passive: true });
 
       document.addEventListener('touchend', (e) => {
+        if (!candidate) return;
+        // последний достоверный замер координат отрывающихся пальцев
+        checkMoved(e.changedTouches);
         if (!candidate) return;
         // Ждём, пока оба пальца оторвутся
         if (e.touches.length > 0) return;
         candidate = false;
         if (Date.now() - startTime > MAX_TAP_MS) return;
+        // масштаб страницы изменился за время жеста — это зум, а не тап
+        if (Math.abs(currentScale() - startScale) > MAX_SCALE_DIFF) return;
 
         // Гасим случайное нажатие кнопки/клавиши пианино под пальцами
         suppressClickUntil = Date.now() + 700;
@@ -4043,6 +4089,23 @@ window.EAR_TRAINER_CONFIG = {
       }, { passive: true });
 
       document.addEventListener('touchcancel', () => { candidate = false; }, { passive: true });
+
+      /* Safari/iOS присылает собственные события масштабирования двумя
+         пальцами. Если они пришли — это точно щипок, а не тап. */
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        document.addEventListener(evt, () => { candidate = false; }, { passive: true });
+      });
+
+      /* Android/Chrome таких событий не присылает, а масштаб может «доехать»
+         уже после отрыва пальцев — поэтому следим ещё и за visual viewport. */
+      if (window.visualViewport) {
+        const viewportCheck = () => {
+          if (!candidate) return;
+          if (Math.abs(currentScale() - startScale) > MAX_SCALE_DIFF) candidate = false;
+        };
+        window.visualViewport.addEventListener('resize', viewportCheck, { passive: true });
+        window.visualViewport.addEventListener('scroll', viewportCheck, { passive: true });
+      }
 
       document.addEventListener('click', (e) => {
         if (Date.now() < suppressClickUntil) {
