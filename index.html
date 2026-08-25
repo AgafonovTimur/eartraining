@@ -674,14 +674,8 @@
     min-width: 220px;
   }
 
-  .colormode-row > span {
-    flex: 0 0 auto;
-    width: 100px;
-  }
-
   .colormode-row .segmented-control {
     flex: 1;
-    min-width: 0;
   }
 
   .colormode-row .segment-btn {
@@ -1382,20 +1376,19 @@
 
 
   /* =====================================================================
-     ЕДИНЫЙ ДИЗАЙН НАСТРОЕК (общий для «Квинтовый круг» / «Ноты» / «Слух»)
-     ---------------------------------------------------------------------
-     Меняются только размеры/отступы/шрифты панели настроек (#right-panel).
-     Цвета тем, порядок блоков и расположение кнопок остаются прежними.
+     ЕДИНЫЙ ДИЗАЙН НАСТРОЕК — всё взято из «Квинтового круга» (эталон):
        панель ........ 520px, padding 14/18/18, radius 8, gap 10
-       кнопка ........ высота 34px, шрифт 13.5px, padding 8/6, radius 6
-       заголовок ..... 13px приглушённый, обычным регистром
-       строка с галкой 24px, шрифт 14px, gap 8
+       кнопка ........ padding 9/4, шрифт 14px, radius 6, без рамки
+       кнопка в сетке  padding 9/2, шрифт 13px
+       верхние вкладки padding 10/4, шрифт 13px
+       заголовок ..... 16px жирный
+       строка с галкой шрифт 16px
        чекбокс ....... 16x16, radius 3, серая заливка
-       select ........ 50% ширины, справа, 32px, 13px
-       слайдер ....... дорожка 4px, бегунок 14px (серый)
-       значок (i) .... 16px, 10px italic bold
-     Кнопки «Выбрать все» / «Снять всё» остаются текстовыми, но красятся
-     акцентным цветом текущей темы.
+       select ........ 50% ширины, справа, padding 8/6, 13px
+       значок (i) .... 22px
+       отступы ....... 8px в рядах, 10/8px в сетках
+     Цвета кнопок в тёмной теме — как в круге: #333333 / #D0D0D0 / #5a5a5a.
+     Кнопки «Выбрать все» / «Снять всё» остаются текстовыми, цветом темы.
      ===================================================================== */
 
   .menu-panel.right-panel{
@@ -1406,66 +1399,97 @@
     box-shadow:0 10px 30px rgba(0,0,0,.75);
   }
 
+  #right-panel{
+    --set-btn-bg: var(--chip-bg);
+    --set-btn-text: var(--chip-text);
+    --set-btn-active-bg: var(--chip-selected-bg);
+    --set-btn-active-text: var(--chip-text);
+    --set-title: var(--fg-text);
+  }
+  [data-theme="1"] #right-panel{
+    --set-btn-bg:#333333;
+    --set-btn-text:#D0D0D0;
+    --set-btn-active-bg:#5a5a5a;
+    --set-btn-active-text:#D0D0D0;
+    --set-title:#D0D0D0;
+    background-color:#1e1e1e;
+    border-color:#333333;
+  }
+  [data-theme="5"] #right-panel{
+    --set-btn-active-text: var(--chip-selected-text);
+  }
+
   #right-panel .section,
   #right-panel .section-block{
     gap:10px;
   }
 
   /* ---- Заголовки блоков ---- */
-  #right-panel .section-title{
+  /* как надпись «Вариант 1» в круге: 13px, жирный, основной цвет текста */
+  #right-panel .section-title,
+  #right-panel .label-with-info .field-label{
     font-size:13px;
-    font-weight:normal;
+    font-weight:bold;
     text-transform:none;
     letter-spacing:0;
-    color:var(--text-muted);
+    color:var(--set-title);
     min-height:20px;
   }
-  #right-panel .field-label{ font-size:13px; }
+  #right-panel .field-label{ font-size:16px; color:var(--set-title); font-weight:normal; }
   #right-panel .hint-text{ font-size:12px; }
   #right-panel .label-with-info{ gap:6px; }
 
   /* ---- «Выбрать все» / «Снять всё» — цветом под тему ---- */
   #right-panel .quick-actions-inline,
-  #right-panel .quick-actions-left{ gap:10px; }
+  #right-panel .quick-actions-left{ gap:12px; }
   #right-panel .text-btn{
     color:var(--title-color);
     font-size:13px;
     text-decoration:none;
-    height:24px;
     padding:0;
+    font-weight:normal;
   }
   #right-panel .text-btn:hover{
     color:var(--fg-text);
     text-decoration:underline;
   }
 
-  /* ---- Кнопки: одна высота и один шрифт во всей панели ---- */
+  /* ---- Кнопки ---- */
   #right-panel .tab-btn,
   #right-panel .segment-btn,
   #right-panel .toggle-chip,
   #right-panel .btn-action{
-    height:34px;
-    min-height:34px;
-    padding:8px 6px;
     border:none;
     border-radius:6px;
-    font-size:13.5px;
+    padding:9px 4px;
+    font-size:14px;
     font-weight:normal;
-    line-height:1.1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
+    line-height:1.2;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
+    box-shadow:none;
     box-sizing:border-box;
     min-width:0;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    box-shadow:none;
+    white-space:normal;
+    text-align:center;
+  }
+  #right-panel .tab-btn{
+    padding:10px 4px;
+    font-size:13px;
+    font-weight:500;
+  }
+  #right-panel .tab-btn:hover,
+  #right-panel .segment-btn:hover,
+  #right-panel .toggle-chip:hover,
+  #right-panel .btn-action:hover{
+    background-color:var(--chip-hover-bg);
+    color:var(--set-btn-text);
   }
   #right-panel .tab-btn.active,
   #right-panel .segment-btn.active,
   #right-panel .toggle-chip.selected{
+    background-color:var(--set-btn-active-bg);
+    color:var(--set-btn-active-text);
     border:none;
     box-shadow:none;
     font-weight:600;
@@ -1475,24 +1499,8 @@
     border:none !important;
   }
 
-  /* Цвет текста на нажатой кнопке не меняется — как у обычной кнопки
-     (в светлой теме №5 остаётся свой, иначе тёмное на тёмном). */
-  #right-panel .tab-btn.active,
-  #right-panel .segment-btn.active{
-    color:var(--btn-text);
-  }
-  #right-panel .toggle-chip.selected{
-    color:var(--chip-text);
-  }
-  [data-theme="5"] #right-panel .tab-btn.active,
-  [data-theme="5"] #right-panel .segment-btn.active{
-    color:var(--btn-active-text);
-  }
-  [data-theme="5"] #right-panel .toggle-chip.selected{
-    color:var(--chip-selected-text);
-  }
-
   /* ---- Сетки ---- */
+  /* Расстояние между кнопками по ширине уменьшено вдвое */
   #right-panel .nav-tabs{
     gap:4px;
     margin-bottom:0;
@@ -1504,32 +1512,32 @@
   /* пианино: чёрные клавиши сверху между белыми (14 колонок) */
   #right-panel .piano-grid{
     column-gap:4px;
-    row-gap:4px;
+    row-gap:10px;
   }
   #right-panel .piano-grid .toggle-chip{
-    height:34px;
-    min-height:34px;
-    font-size:13.5px;
-    padding:0;
+    height:auto;
+    padding:9px 2px;
+    font-size:13px;
+    display:block;
   }
   #right-panel .piano-grid .toggle-chip.black-key{
-    height:34px;
-    min-height:34px;
-    font-size:11px;
+    height:auto;
+    font-size:12px;
   }
 
   /* интервалы / аккорды / ширина — 3 колонки */
   #right-panel .intervals-grid,
   #right-panel .chords-grid{
     grid-template-columns:repeat(3, 1fr);
-    gap:4px;
+    gap:10px 4px;
   }
   #right-panel .chords-grid .toggle-chip,
   #right-panel .intervals-grid .toggle-chip{
-    height:34px;
-    min-height:34px;
-    padding:0 4px;
-    font-size:12px;
+    width:auto;
+    height:auto;
+    padding:9px 2px;
+    font-size:13px;
+    display:block;
   }
   /* обращения — 4 колонки, направление интервала — 2 */
   #right-panel #inversion-grid{ grid-template-columns:repeat(4, 1fr); }
@@ -1539,24 +1547,22 @@
   #right-panel .octaves-row{
     display:grid;
     grid-template-columns:repeat(7, 1fr);
-    gap:4px;
+    gap:10px 4px;
   }
   #right-panel .octaves-row .toggle-chip{
     flex:none;
-    padding:8px 2px;
+    padding:9px 2px;
+    font-size:13px;
   }
 
   /* ---- Строки с галками ---- */
-  #right-panel .checkbox-row{
-    gap:8px;
-    min-height:24px;
-  }
-  #right-panel .checkbox-label{ font-size:14px; }
-  #right-panel .settings-position-row{ gap:6px 12px; min-height:24px; }
-  #right-panel .settings-position-options{ gap:6px 12px; }
+  #right-panel .checkbox-row{ gap:8px; }
+  #right-panel .checkbox-label{ font-size:16px; color:var(--fg-text); }
+  #right-panel .settings-position-row{ gap:8px 12px; }
+  #right-panel .settings-position-options{ gap:8px 12px; }
   #right-panel .settings-position-option{ gap:8px; }
 
-  /* ---- Чекбокс: 16x16, radius 3, серая заливка ---- */
+  /* ---- Чекбокс ---- */
   #right-panel .custom-checkbox{
     width:16px;
     height:16px;
@@ -1575,76 +1581,89 @@
     border-color:#2f2f2f;
   }
 
-  /* ---- Слайдер громкости: дорожка 4px, бегунок 14px серый ---- */
-  #right-panel .volume-row{ gap:8px; min-height:26px; margin-top:0; }
-  #right-panel .volume-slider{ height:4px; }
+  /* ---- Слайдер громкости ---- */
+  #right-panel .volume-row{ gap:8px; margin-top:0; }
+  #right-panel .volume-slider{ height:4px; background:var(--set-btn-bg); }
   #right-panel .volume-slider::-webkit-slider-thumb{
     width:14px;
     height:14px;
-    background:var(--fg-dim, #a8a8a8);
+    background:var(--set-btn-active-bg);
   }
   #right-panel .volume-slider::-moz-range-thumb{
     width:14px;
     height:14px;
     border:none;
     border-radius:50%;
-    background:var(--fg-dim, #a8a8a8);
+    background:var(--set-btn-active-bg);
   }
-  #right-panel .volume-value{ font-size:13px; }
+  #right-panel .volume-value{ font-size:14px; }
 
   /* ---- Выпадающие списки и поля ---- */
   #right-panel select{
-    height:32px;
-    padding:0 28px 0 10px;
+    padding:8px 28px 8px 10px;
     border:none;
     border-radius:6px;
     font-size:13px;
     box-sizing:border-box;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
   }
   #right-panel .theme-row{
     gap:8px;
-    font-size:14px;
-    min-height:24px;
+    font-size:16px;
+    color:var(--fg-text);
   }
   #right-panel .theme-row select,
   #right-panel .midiPanelRow select{
     flex:0 0 50%;
     width:50%;
+    max-width:50%;
     margin-left:auto;
   }
-  #right-panel .midiPanelRow{
-    gap:8px;
-    min-height:26px;
-  }
+  #right-panel .midiPanelRow{ gap:8px; }
   #right-panel .midiPanelRow input[type="number"]{
-    height:26px;
-    padding:2px 6px;
+    padding:8px 6px;
+    border:none;
     border-radius:6px;
     font-size:13px;
     box-sizing:border-box;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
   }
   #right-panel .midiPanel{ gap:10px; }
   #right-panel .settings-box{
-    padding:12px;
+    padding:14px;
     gap:10px;
     border-radius:8px;
   }
+  [data-theme="1"] #right-panel .settings-box{
+    background-color:#1e1e1e;
+    border-color:#333333;
+  }
   #right-panel #onlineFields{ gap:10px; }
-  #right-panel .field-group{ gap:6px; }
+  #right-panel .field-group{ gap:8px; }
   #right-panel .colormode-row{ gap:8px; }
   #right-panel .colormode-row .segment-btn{
-    padding:8px 4px;
-    font-size:13.5px;
+    padding:9px 4px;
+    font-size:14px;
+  }
+  /* «Цвет ответа» и «Названия нот» — кнопки одной ширины (половина панели,
+     прижаты вправо, как выпадашка «Тема:» над ними) */
+  #right-panel .colormode-row .segmented-control{
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
   }
 
   /* ---- Значок подсказки (i) ---- */
   #right-panel .info-icon{
-    width:16px;
-    height:16px;
+    width:22px;
+    height:22px;
     border:none;
-    background:var(--btn-bg);
-    color:var(--btn-text);
-    font-size:10px;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+    font-size:13px;
     font-style:italic;
     font-weight:700;
     font-family:inherit;
@@ -1659,89 +1678,9 @@
       padding:12px 10px 14px;
       border-radius:8px;
     }
-    #right-panel .tab-btn,
-    #right-panel .segment-btn,
-    #right-panel .toggle-chip,
-    #right-panel .btn-action,
-    #right-panel .piano-grid .toggle-chip,
-    #right-panel .piano-grid .toggle-chip.black-key,
-    #right-panel .chords-grid .toggle-chip,
-    #right-panel .intervals-grid .toggle-chip{
-      height:40px;
-      min-height:40px;
-      font-size:13.5px;
-    }
     #right-panel .intervals-grid,
     #right-panel .chords-grid{ grid-template-columns:repeat(3, 1fr); }
     #right-panel .octaves-row{ grid-template-columns:repeat(4, 1fr); }
-    #right-panel .checkbox-row,
-    #right-panel .settings-position-option{ min-height:30px; }
-  }
-
-  /* =====================================================================
-     ЕДИНАЯ ПАЛИТРА НАСТРОЕК В ТЁМНОЙ ТЕМЕ (как в «Квинтовом круге»)
-     кнопка #333333 / текст #D0D0D0 / нажатая #5a5a5a, панель #1e1e1e,
-     рамка #333333. Остальные темы берут свои цвета, как раньше.
-     ===================================================================== */
-  #right-panel{
-    --set-btn-bg: var(--chip-bg);
-    --set-btn-text: var(--chip-text);
-    --set-btn-active-bg: var(--chip-selected-bg);
-    --set-btn-active-text: var(--chip-text);
-  }
-  [data-theme="1"] #right-panel{
-    --set-btn-bg:#333333;
-    --set-btn-text:#D0D0D0;
-    --set-btn-active-bg:#5a5a5a;
-    --set-btn-active-text:#D0D0D0;
-    background-color:#1e1e1e;
-    border-color:#333333;
-  }
-  [data-theme="5"] #right-panel{
-    --set-btn-active-text: var(--chip-selected-text);
-  }
-
-  #right-panel .tab-btn,
-  #right-panel .segment-btn,
-  #right-panel .toggle-chip,
-  #right-panel .btn-action{
-    background-color:var(--set-btn-bg);
-    color:var(--set-btn-text);
-  }
-  #right-panel .tab-btn:hover,
-  #right-panel .segment-btn:hover,
-  #right-panel .toggle-chip:hover,
-  #right-panel .btn-action:hover{
-    background-color:var(--chip-hover-bg);
-    color:var(--set-btn-text);
-  }
-  #right-panel .tab-btn.active,
-  #right-panel .segment-btn.active,
-  #right-panel .toggle-chip.selected{
-    background-color:var(--set-btn-active-bg);
-    color:var(--set-btn-active-text);
-  }
-  #right-panel select,
-  #right-panel .midiPanelRow input[type="number"]{
-    background-color:var(--set-btn-bg);
-    color:var(--set-btn-text);
-  }
-  #right-panel .info-icon{
-    background:var(--set-btn-bg);
-    color:var(--set-btn-text);
-  }
-  #right-panel .volume-slider{
-    background:var(--set-btn-bg);
-  }
-  #right-panel .volume-slider::-webkit-slider-thumb{
-    background:var(--set-btn-active-bg);
-  }
-  #right-panel .volume-slider::-moz-range-thumb{
-    background:var(--set-btn-active-bg);
-  }
-  [data-theme="1"] #right-panel .settings-box{
-    background-color:#1e1e1e;
-    border-color:#333333;
   }
 </style>
 </head>
