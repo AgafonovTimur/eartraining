@@ -1472,6 +1472,11 @@
     min-width:0;
     white-space:normal;
     text-align:center;
+    /* надпись всегда по центру кнопки, даже если соседняя кнопка в ряду
+       переносится на две строки и ряд становится выше */
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
   #right-panel .tab-btn{
     padding:10px 4px;
@@ -1512,13 +1517,12 @@
   /* пианино: чёрные клавиши сверху между белыми (14 колонок) */
   #right-panel .piano-grid{
     column-gap:4px;
-    row-gap:10px;
+    row-gap:5px;
   }
   #right-panel .piano-grid .toggle-chip{
     height:auto;
     padding:9px 2px;
     font-size:13px;
-    display:block;
   }
   #right-panel .piano-grid .toggle-chip.black-key{
     height:auto;
@@ -1529,7 +1533,7 @@
   #right-panel .intervals-grid,
   #right-panel .chords-grid{
     grid-template-columns:repeat(3, 1fr);
-    gap:10px 4px;
+    gap:5px 4px;
   }
   #right-panel .chords-grid .toggle-chip,
   #right-panel .intervals-grid .toggle-chip{
@@ -1537,7 +1541,6 @@
     height:auto;
     padding:9px 2px;
     font-size:13px;
-    display:block;
   }
   /* обращения — 4 колонки, направление интервала — 2 */
   #right-panel #inversion-grid{ grid-template-columns:repeat(4, 1fr); }
@@ -1547,7 +1550,7 @@
   #right-panel .octaves-row{
     display:grid;
     grid-template-columns:repeat(7, 1fr);
-    gap:10px 4px;
+    gap:5px 4px;
   }
   #right-panel .octaves-row .toggle-chip{
     flex:none;
