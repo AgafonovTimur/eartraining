@@ -1190,6 +1190,14 @@
     pointer-events: none;
   }
 
+  /* Крупная подсказка — шрифт как в «Все горячие клавиши» в Circle of Fifths */
+  .info-tip-float.tip-big {
+    width: 440px;
+    max-width: calc(100vw - 20px);
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
   .info-tip-float.visible {
     opacity: 1;
     visibility: visible;
@@ -1886,7 +1894,7 @@
 
     /* >>> РАЗМЕР ШРИФТА КНОПОК С НОТАМИ В ОКНЕ ОТВЕТА (ТОЛЬКО ТЕЛЕФОН) <<<
        Меняй число ниже. 34px — в 2 раза больше обычных 17px. */
-    :root { --mobile-note-font: 34px; }
+    :root { --mobile-note-font: 32px; }
 
     #pianoAnswer .toggle-chip,
     #bassAnswerRow .toggle-chip,
@@ -1914,6 +1922,44 @@
       flex: 0 0 calc((100% - 24px) / 7);
       max-width: calc((100% - 24px) / 7);
     }
+  }
+  /* Поле «Интервал между нотами (сек)» — выглядит как поле Velocity */
+  .midiPanelRow input#noteGapInput {
+    width: 12.5%;
+    margin-left: auto;
+    padding: 8px 6px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: var(--set-btn-bg, var(--select-bg));
+    color: var(--set-btn-text, var(--fg-text));
+    outline: none;
+    text-align: right;
+  }
+
+  /* ===== Обращения: больше 4 кнопок — один ряд, кнопки и шрифт меньше ===== */
+  #inversionAnswerRow.answer-octaves-row.inv-compact {
+    flex-wrap: nowrap;
+    max-width: calc(4 * 213px + 3 * 7px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #inversionAnswerRow.answer-octaves-row.inv-compact .toggle-chip {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    padding: 0 2px;
+    line-height: 1.15;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .answer-group-box #inversionAnswerRow.inv-compact .toggle-chip { font-size: 14px !important; }
+  @media (max-width: 900px) {
+    #inversionAnswerRow.answer-octaves-row.inv-compact { gap: 3px; }
+    #inversionAnswerRow.answer-octaves-row.inv-compact .toggle-chip { padding: 0 1px; }
+    .answer-group-box #inversionAnswerRow.inv-compact .toggle-chip { font-size: 8px !important; }
   }
 </style>
 </head>
@@ -2080,7 +2126,14 @@
         <!-- Ступени (обращения) аккордов -->
         <div class="section-block" id="inversionSection" style="display:none;">
           <div class="section-title">
-            <span data-i18n="chooseInversions">Выберите ступени (только для мажор минор sus2 sus4 7 maj7 m7 mMaj7)</span>
+            <span class="label-with-info">
+              <span data-i18n="chooseInversions">Выберите ступени</span>
+              <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" data-i18n="chooseInversionsTip">Обращения доступны для всех аккордов. Нижняя нота обращения всегда ставится в выбранную октаву, остальные ноты аккорда выстраиваются над ней. Если в основном виде эта нота звучит октавой выше (например, у Cm11 нона D находится в следующей октаве), в обращении она переносится вниз, в выбранную октаву: 4 обращение Cm11 в октаве 4 — D4 Eb4 F4 G4 Bb4 C5.</span></span>
+            </span>
+            <span class="quick-actions-inline">
+              <button class="text-btn" id="selectAllInversion" data-i18n="selectAll">Выбрать все</button>
+              <button class="text-btn" id="selectNoneInversion" data-i18n="selectNone">Снять всё</button>
+            </span>
           </div>
           <div class="settings-box">
             <div class="chords-grid" id="inversion-grid"></div>
@@ -2089,9 +2142,15 @@
       </div>
 
       <div class="section" id="spreadSection" style="display:none;">
-        <div class="section-title label-with-info">
-          <span data-i18n="intervalSpreadTitle">Ширина интервала</span>
-          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip" data-i18n="intervalSpreadTip">Насколько далеко верхняя нота интервала может быть поднята относительно нижней (на 0–6 октав сверх самого интервала). При нескольких выбранных вариантах ширина каждый раз берётся случайно.</span></span>
+        <div class="section-title">
+          <span class="label-with-info">
+            <span data-i18n="intervalSpreadTitle">Ширина интервала</span>
+            <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" data-i18n="intervalSpreadTip">Насколько далеко верхняя нота интервала может быть поднята относительно нижней (на 0–6 октав сверх самого интервала). При нескольких выбранных вариантах ширина каждый раз берётся случайно.</span></span>
+          </span>
+          <span class="quick-actions-inline">
+            <button class="text-btn" id="selectAllSpread" data-i18n="selectAll">Выбрать все</button>
+            <button class="text-btn" id="selectNoneSpread" data-i18n="selectNone">Снять всё</button>
+          </span>
         </div>
         <div class="settings-box">
         <div class="intervals-grid" id="spread-grid">
@@ -2107,35 +2166,45 @@
       </div>
 
       <div class="section" id="chordSpreadSection" style="display:none;">
-        <div class="section-title label-with-info">
-          <span data-i18n="chordSpreadTitle">Ширина аккорда</span>
-          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip" data-i18n="chordSpreadTip">Насколько далеко верхняя нота аккорда может быть поднята относительно нижней (на 0–6 октав). Средние ноты распределяются между ними случайно, порядок нот снизу вверх сохраняется. При нескольких выбранных вариантах ширина каждый раз берётся случайно.</span></span>
-        </div>
         <div class="settings-box">
-        <div class="intervals-grid" id="chord-spread-grid">
-          <div class="toggle-chip" data-spread="0" data-i18n="spread0">В одной октаве</div>
-          <div class="toggle-chip" data-spread="1" data-i18n="spread1">+1 октава</div>
-          <div class="toggle-chip" data-spread="2" data-i18n="spread2">+2 октавы</div>
-          <div class="toggle-chip" data-spread="3" data-i18n="spread3">+3 октавы</div>
-          <div class="toggle-chip" data-spread="4" data-i18n="spread4">+4 октавы</div>
-          <div class="toggle-chip" data-spread="5" data-i18n="spread5">+5 октав</div>
-          <div class="toggle-chip" data-spread="6" data-i18n="spread6">+6 октав</div>
-        </div>
-        </div>
-      </div>
-
-      <div class="section" id="directionSection" style="display:none;">
-        <div class="section-title" data-i18n="intervalDirTitle">Направление интервала</div>
-        <div class="settings-box">
-        <div class="intervals-grid" id="direction-grid">
-          <div class="toggle-chip" data-dir="up" data-i18n="intervalUp">Интервал вверх</div>
-          <div class="toggle-chip" data-dir="down" data-i18n="intervalDown">Интервал вниз</div>
+        <label id="wideChordRow" class="checkbox-row">
+          <input type="checkbox" id="wideChordCheckbox">
+          <div class="custom-checkbox"></div>
+          <span class="checkbox-label" data-i18n="wideChordLabel">Широкий аккорд</span>
+          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" data-i18n="chordSpreadTip"></span></span>
+        </label>
+        <div id="wideChordBody" style="display:none; margin-top:10px;">
+          <div class="segmented-control" id="wideChordSegment" style="margin-bottom:10px;">
+            <button class="segment-btn active" data-widemode="octaves" data-i18n="wideModeOctaves">Октавы вверх</button>
+            <button class="segment-btn" data-widemode="open" data-i18n="wideModeOpen">Открытый аккорд</button>
+          </div>
+          <div class="section-title bass-sub-title" id="chordSpreadGridTitle" style="margin-bottom:8px;">
+            <span data-i18n="wideModeOctaves">Октавы вверх</span>
+            <span class="quick-actions-inline">
+              <button class="text-btn" id="selectAllChordSpread" data-i18n="selectAll">Выбрать все</button>
+              <button class="text-btn" id="selectNoneChordSpread" data-i18n="selectNone">Снять всё</button>
+            </span>
+          </div>
+          <div class="intervals-grid" id="chord-spread-grid">
+            <div class="toggle-chip" data-spread="1" data-i18n="spread1">+1 октава</div>
+            <div class="toggle-chip" data-spread="2" data-i18n="spread2">+2 октавы</div>
+            <div class="toggle-chip" data-spread="3" data-i18n="spread3">+3 октавы</div>
+            <div class="toggle-chip" data-spread="4" data-i18n="spread4">+4 октавы</div>
+            <div class="toggle-chip" data-spread="5" data-i18n="spread5">+5 октав</div>
+            <div class="toggle-chip" data-spread="6" data-i18n="spread6">+6 октав</div>
+          </div>
         </div>
         </div>
       </div>
 
       <div class="section">
-        <div class="section-title" data-i18n="chooseOctaves">Выберите октаву или несколько октав</div>
+        <div class="section-title">
+          <span data-i18n="chooseOctaves">Выберите октаву или несколько октав</span>
+          <span class="quick-actions-inline">
+            <button class="text-btn" id="selectAllOctave" data-i18n="selectAll">Выбрать все</button>
+            <button class="text-btn" id="selectNoneOctave" data-i18n="selectNone">Снять всё</button>
+          </span>
+        </div>
         <div class="settings-box">
         <div class="octaves-row" id="octave-grid"></div>
 
@@ -2143,7 +2212,7 @@
           <div class="field-group">
             <div class="label-with-info">
               <span class="field-label" data-i18n="octaveCheckTitle">Проверка октавы</span>
-              <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip" data-i18n="octaveCheckTip">Если выбрана «Любая» — играет та октава, что выбрана выше в меню октав, а отвечать можно клавишей в любой октаве.</span></span>
+              <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" data-i18n="octaveCheckTip">Если выбрана «Любая» — играет та октава, что выбрана выше в меню октав, а отвечать можно клавишей в любой октаве.</span></span>
             </div>
             <div class="segmented-control" id="octaveMatchSegment">
               <button class="segment-btn active" data-octavematch="any" data-i18n="anyLabel">Любая</button>
@@ -2160,24 +2229,56 @@
           <input type="checkbox" id="bass1Checkbox">
           <div class="custom-checkbox"></div>
           <span class="checkbox-label" data-i18n="bass1Label">Бас - одна нота</span>
+          <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" id="bass1Tip" data-i18n="bass1TipChords"></span></span>
         </label>
         <div id="bass1Body" class="bass-off">
           <div class="section-title bass-sub-title"><span id="bassDegreeTitle" data-i18n="bassChordNotesTitle">Ноты аккорда</span></div>
           <div class="chords-grid" id="bass-degree-grid"></div>
-          <div class="section-title bass-sub-title"><span data-i18n="bassOctaveTitle">Октава баса</span></div>
+          <div class="section-title bass-sub-title">
+            <span data-i18n="bassOctaveTitle">Октава баса</span>
+            <span class="quick-actions-inline">
+              <button class="text-btn" id="selectAllBassOctave" data-i18n="selectAll">Выбрать все</button>
+              <button class="text-btn" id="selectNoneBassOctave" data-i18n="selectNone">Снять всё</button>
+            </span>
+          </div>
           <div class="octaves-row" id="bass-octave-grid"></div>
           <label id="bass2Row" class="checkbox-row">
             <input type="checkbox" id="bass2Checkbox">
             <div class="custom-checkbox"></div>
             <span class="checkbox-label" data-i18n="bass2Label">Бас - вторая нота</span>
+            <span class="info-icon" tabindex="0" aria-label="Подсказка">i<span class="info-tip tip-big" id="bass2Tip" data-i18n="bass2TipChords"></span></span>
           </label>
           <div id="bass2Body" class="bass-off">
             <div class="section-title bass-sub-title"><span id="bass2DegreeTitle" data-i18n="bassChordNotesTitle">Ноты аккорда</span></div>
             <div class="chords-grid" id="bass2-degree-grid"></div>
-            <div class="section-title bass-sub-title"><span data-i18n="bass2OctaveTitle">Октава баса 2</span></div>
+            <div class="section-title bass-sub-title">
+              <span data-i18n="bass2OctaveTitle">Октава баса 2</span>
+              <span class="quick-actions-inline">
+                <button class="text-btn" id="selectAllBass2Octave" data-i18n="selectAll">Выбрать все</button>
+                <button class="text-btn" id="selectNoneBass2Octave" data-i18n="selectNone">Снять всё</button>
+              </span>
+            </div>
             <div class="octaves-row" id="bass2-octave-grid"></div>
           </div>
         </div>
+        </div>
+
+        <div class="settings-box" id="playModeBox" style="display:none;">
+          <div class="segmented-control" id="playModeSegment">
+            <button class="segment-btn active" data-playmode="together" data-i18n="playTogether">Сыграть за раз</button>
+            <button class="segment-btn" data-playmode="sequential" data-i18n="playSequential">Сыграть по очереди</button>
+          </div>
+          <div id="directionSection" style="display:none; flex-direction:column; gap:8px;">
+            <div class="section-title" data-i18n="intervalDirTitle">Направление интервала</div>
+            <div class="intervals-grid" id="direction-grid">
+              <div class="toggle-chip" data-dir="up" data-i18n="intervalUp">Интервал вверх</div>
+              <div class="toggle-chip" data-dir="down" data-i18n="intervalDown">Интервал вниз</div>
+            </div>
+          </div>
+          <div class="midiPanelRow">
+            <span class="field-label" data-i18n="noteGapLabel">Интервал между нотами (сек):</span>
+            <input type="text" inputmode="decimal" id="noteGapInput" value="0,5">
+          </div>
         </div>
 
         <div class="settings-box">
@@ -2380,11 +2481,13 @@ window.EAR_TRAINER_CONFIG = {
       poolTitleIntervals: 'Выберите интервал или несколько',
       poolTitleChords: 'Выберите аккорд или несколько',
       chordByNotes: 'выбрать аккорд нотами',
-      chooseInversions: 'Выберите ступени (только для мажор минор sus2 sus4 7 maj7 m7 mMaj7)',
+      chooseInversions: 'Выберите ступени',
+      chooseInversionsTip: 'Обращения доступны для всех аккордов. Нижняя нота обращения всегда ставится в выбранную октаву, остальные ноты аккорда выстраиваются над ней. Если в основном виде эта нота звучит октавой выше (например, у Cm11 нона D находится в следующей октаве), в обращении она переносится вниз, в выбранную октаву: 4 обращение Cm11 в октаве 4 — D4 Eb4 F4 G4 Bb4 C5.',
       intervalSpreadTitle: 'Ширина интервала',
       intervalSpreadTip: 'Насколько далеко верхняя нота интервала может быть поднята относительно нижней (на 0–6 октав сверх самого интервала). При нескольких выбранных вариантах ширина каждый раз берётся случайно.',
       chordSpreadTitle: 'Ширина аккорда',
-      chordSpreadTip: 'Насколько далеко верхняя нота аккорда может быть поднята относительно нижней (на 0–6 октав). Средние ноты распределяются между ними случайно, порядок нот снизу вверх сохраняется. При нескольких выбранных вариантах ширина каждый раз берётся случайно.',
+      chordSpreadTip: "Если галка выключена, аккорд звучит в одной октаве. «Октавы вверх» — верхняя нота аккорда поднимается относительно нижней на выбранное число октав (+1…+6), средние ноты распределяются между ними случайно, порядок нот снизу вверх сохраняется; при нескольких выбранных вариантах ширина каждый раз берётся случайно. «Открытый аккорд» — вторая нота остаётся в выбранной октаве, первая переносится на октаву ниже, третья — на октаву выше второй, четвёртая — на 2 октавы выше второй и т.д. (C мажор, окт. 4 → C3 E4 G5).",
+      wideChordLabel: "Широкий аккорд", wideModeOctaves: "Октавы вверх", wideModeOpen: "Открытый аккорд",
       spread0: 'В одной октаве', spread1: '+1 октава', spread2: '+2 октавы', spread3: '+3 октавы',
       spread4: '+4 октавы', spread5: '+5 октав', spread6: '+6 октав',
       intervalDirTitle: 'Направление интервала',
@@ -2396,6 +2499,8 @@ window.EAR_TRAINER_CONFIG = {
       anyLabel: 'Любая',
       exactLabel: 'Точная',
       showResult: 'показывать результат',
+      bass1TipChords: "Дополнительная низкая нота, звучит ниже аккорда. «Первая нота аккорда» — тоника, «Вторая нота аккорда» — 3-я ступень (в Sus2 — 2-я, в Sus4 и 7sus4 — 4-я), «Третья нота аккорда» — 5-я ступень. Ноты берутся от основного вида аккорда, обращение на них не влияет. Если выбрано несколько нот или октав, каждый раз берётся случайный вариант, и его нужно угадать в окне ответа.", bass1TipIntervals: "Дополнительная низкая нота, звучит ниже интервала. «Первая нота интервала» — нота, которая звучит первой, «Вторая нота интервала» — нота, которая звучит второй. При «Сыграть за раз» и при «Интервал вверх» первая нота — нижняя (тоника), вторая — верхняя; при «Сыграть по очереди» с «Интервал вниз» — наоборот. Если выбрано несколько нот или октав, каждый раз берётся случайный вариант, и его нужно угадать в окне ответа.", bass2TipChords: "Вторая нота баса, всегда звучит ниже баса 1. Ноты те же, что у баса 1: «Первая нота аккорда» — тоника, «Вторая нота аккорда» — 3-я ступень (в Sus2 — 2-я, в Sus4 и 7sus4 — 4-я), «Третья нота аккорда» — 5-я ступень; берутся от основного вида аккорда. Если выбрано несколько нот или октав, каждый раз берётся случайный вариант, и его нужно угадать в окне ответа.", bass2TipIntervals: "Вторая нота баса, всегда звучит ниже баса 1. Ноты те же, что у баса 1: «Первая нота интервала» — нота, которая звучит первой, «Вторая нота интервала» — нота, которая звучит второй (при «Сыграть по очереди» с «Интервал вниз» первой звучит верхняя). Если выбрано несколько нот или октав, каждый раз берётся случайный вариант, и его нужно угадать в окне ответа.",
+      bassChordNote1: "Первая нота аккорда", bassChordNote2: "Вторая нота аккорда", bassChordNote3: "Третья нота аккорда", bassIntervalNote1: "Первая нота интервала", bassIntervalNote2: "Вторая нота интервала",
       bass1Label: 'Бас - одна нота', bass2Label: 'Бас - вторая нота', bass2OctaveTitle: 'Октава баса 2', bass2Word: 'Бас 2',
       mistakeBass2: 'Бас 2 не верный: у вас ', mistakeBass2Oct: 'октава баса 2: у вас ',
       alertNoBass2InRange: 'Бас 2 не помещается ниже первого баса в выбранных октавах — выберите октаву баса 2 ниже или октаву баса выше.', bassChordNotesTitle: 'Ноты аккорда', bassIntervalNotesTitle: 'Ноты интервала',
@@ -2452,16 +2557,18 @@ window.EAR_TRAINER_CONFIG = {
       webMidiUnsupported: 'Web MIDI API не поддерживается в этом браузере.',
       midiConnected: 'MIDI подключён.',
       midiAccessDenied: 'Доступ к MIDI не разрешён браузером.',
-      wrongOrderIntervalDown: 'не тот порядок: интервал вниз — сначала нижняя нота, потом тоника',
+      wrongOrderIntervalDown: 'не тот порядок: интервал вниз — сначала верхняя нота, потом тоника',
       wrongOrderIntervalUp: 'не тот порядок: интервал вверх — сначала тоника, потом верхняя',
       wrongOrderChord: 'не тот порядок: нужно ',
-      mistakeInterval: 'интервал: у вас ', mistakeIntervalNeed: ', нужен ',
+      mistakeInterval: 'интервал: у вас ', mistakeIntervalNeed: ', нужна ', mistakeIntervalNeedM: ', нужен ',
       mistakeChord: 'аккорд: у вас ', mistakeChordNeed: ', нужен ',
       mistakeTonic: 'тоника не верная: у вас ', mistakeTonicNeed: ', нужна ',
       mistakeDirection: 'направление: у вас ', mistakeDirectionNeed: ', нужен ',
       mistakeInversion: 'обращение: у вас ', mistakeInversionNeed: ', нужно ',
       mistakeOctave: 'октава: у вас ', mistakeOctaveNeed: ', нужна ',
       inversionFallback: 'обращение ',
+      wrongOrderChordRoot: 'не тот порядок: нужен основной вид', invNeedRoot: ', нужен основной вид',
+      playTogether: 'Сыграть за раз', playSequential: 'Сыграть по очереди', noteGapLabel: 'Интервал между нотами (сек):',
     },
     en: {
       pageTitle: 'Ear Training',
@@ -2491,11 +2598,13 @@ window.EAR_TRAINER_CONFIG = {
       poolTitleIntervals: 'Choose one or more intervals',
       poolTitleChords: 'Choose one or more chords',
       chordByNotes: 'enter chord as notes',
-      chooseInversions: 'Choose inversions (major, minor, sus2, sus4, 7, maj7, m7, mMaj7 only)',
+      chooseInversions: 'Choose inversions',
+      chooseInversionsTip: 'Inversions are available for all chords. The lowest note of an inversion is always placed in the selected octave, and the other chord notes are stacked above it. If that note sounds an octave higher in root position (e.g. the 9th D of Cm11 lies in the next octave), in the inversion it is moved down into the selected octave: 4th inversion of Cm11 in octave 4 — D4 Eb4 F4 G4 Bb4 C5.',
       intervalSpreadTitle: 'Interval spread',
       intervalSpreadTip: 'How far the upper note of the interval can be raised above the lower note (0–6 octaves beyond the interval itself). If several options are selected, the spread is chosen randomly each time.',
       chordSpreadTitle: 'Chord spread',
-      chordSpreadTip: 'How far the top note of the chord can be raised above the bottom note (0–6 octaves). Middle notes are distributed randomly between them, keeping the bottom-to-top order. If several options are selected, the spread is chosen randomly each time.',
+      chordSpreadTip: "If unchecked, the chord is played within one octave. “Octaves up” — the top note of the chord is raised above the bottom note by the selected number of octaves (+1…+6); middle notes are distributed randomly between them, keeping the bottom-to-top order; if several options are selected, the spread is chosen randomly each time. “Open chord” — the second note stays in the selected octave, the first moves an octave down, the third goes an octave above the second, the fourth two octaves above the second, and so on (C major, oct. 4 → C3 E4 G5).",
+      wideChordLabel: "Wide chord", wideModeOctaves: "Octaves up", wideModeOpen: "Open chord",
       spread0: 'Within one octave', spread1: '+1 octave', spread2: '+2 octaves', spread3: '+3 octaves',
       spread4: '+4 octaves', spread5: '+5 octaves', spread6: '+6 octaves',
       intervalDirTitle: 'Interval direction',
@@ -2507,6 +2616,8 @@ window.EAR_TRAINER_CONFIG = {
       anyLabel: 'Any',
       exactLabel: 'Exact',
       showResult: 'show result',
+      bass1TipChords: "An extra low note played below the chord. “First chord note” is the root, “Second chord note” is the 3rd (the 2nd in Sus2, the 4th in Sus4 and 7sus4), “Third chord note” is the 5th. Notes are taken from the chord in root position; the inversion does not affect them. If several notes or octaves are selected, a random option is chosen each time and you have to identify it in the answer panel.", bass1TipIntervals: "An extra low note played below the interval. “First interval note” is the note that sounds first, “Second interval note” is the note that sounds second. With “Play together” and with “Interval up” the first note is the lower one (root) and the second is the upper one; with “Play one by one” and “Interval down” it is the other way round. If several notes or octaves are selected, a random option is chosen each time and you have to identify it in the answer panel.", bass2TipChords: "The second bass note, always below bass 1. The notes are the same as for bass 1: “First chord note” is the root, “Second chord note” is the 3rd (the 2nd in Sus2, the 4th in Sus4 and 7sus4), “Third chord note” is the 5th; taken from the chord in root position. If several notes or octaves are selected, a random option is chosen each time and you have to identify it in the answer panel.", bass2TipIntervals: "The second bass note, always below bass 1. The notes are the same as for bass 1: “First interval note” is the note that sounds first, “Second interval note” is the note that sounds second (with “Play one by one” and “Interval down” the upper note sounds first). If several notes or octaves are selected, a random option is chosen each time and you have to identify it in the answer panel.",
+      bassChordNote1: "First chord note", bassChordNote2: "Second chord note", bassChordNote3: "Third chord note", bassIntervalNote1: "First interval note", bassIntervalNote2: "Second interval note",
       bass1Label: 'Bass - one note', bass2Label: 'Bass - second note', bass2OctaveTitle: 'Bass 2 octave', bass2Word: 'Bass 2',
       mistakeBass2: 'Wrong bass 2: you played ', mistakeBass2Oct: 'bass 2 octave: you played ',
       alertNoBass2InRange: 'Bass 2 does not fit below the first bass in the selected octaves — choose a lower bass 2 octave or a higher bass octave.', bassChordNotesTitle: 'Chord notes', bassIntervalNotesTitle: 'Interval notes',
@@ -2563,16 +2674,18 @@ window.EAR_TRAINER_CONFIG = {
       webMidiUnsupported: 'Web MIDI API is not supported in this browser.',
       midiConnected: 'MIDI connected.',
       midiAccessDenied: 'MIDI access was not granted by the browser.',
-      wrongOrderIntervalDown: 'wrong order: interval down — lower note first, then the root',
+      wrongOrderIntervalDown: 'wrong order: interval down — upper note first, then the root',
       wrongOrderIntervalUp: 'wrong order: interval up — root first, then the upper note',
       wrongOrderChord: 'wrong order: needed ',
-      mistakeInterval: 'interval: you played ', mistakeIntervalNeed: ', needed ',
+      mistakeInterval: 'interval: you played ', mistakeIntervalNeed: ', needed ', mistakeIntervalNeedM: ', needed ',
       mistakeChord: 'chord: you played ', mistakeChordNeed: ', needed ',
       mistakeTonic: 'wrong root: you played ', mistakeTonicNeed: ', needed ',
       mistakeDirection: 'direction: you played ', mistakeDirectionNeed: ', needed ',
       mistakeInversion: 'inversion: you played ', mistakeInversionNeed: ', needed ',
       mistakeOctave: 'octave: you played ', mistakeOctaveNeed: ', needed ',
       inversionFallback: 'inversion ',
+      wrongOrderChordRoot: 'wrong order: root position needed', invNeedRoot: ', needed root position',
+      playTogether: 'Play together', playSequential: 'Play one by one', noteGapLabel: 'Interval between notes (sec):',
     },
     zh: {
       pageTitle: '听力训练',
@@ -2602,11 +2715,13 @@ window.EAR_TRAINER_CONFIG = {
       poolTitleIntervals: '选择一个或多个音程',
       poolTitleChords: '选择一个或多个和弦',
       chordByNotes: '用音符输入和弦',
-      chooseInversions: '选择转位（仅限大三和弦、小三和弦、sus2、sus4、7、maj7、m7、mMaj7）',
+      chooseInversions: '选择转位',
+      chooseInversionsTip: '所有和弦都可使用转位。转位的最低音始终放在所选八度，其余和弦音排列在它上方。如果该音在原位中高一个八度（例如 Cm11 的九音 D 位于下一个八度），转位时它会下移到所选八度：八度 4 中 Cm11 的第四转位为 D4 Eb4 F4 G4 Bb4 C5。',
       intervalSpreadTitle: '音程跨度',
       intervalSpreadTip: '音程的高音相对低音最多可以升高多少（在音程本身之外再加0–6个八度）。选中多个选项时，每次随机选择跨度。',
       chordSpreadTitle: '和弦跨度',
-      chordSpreadTip: '和弦最高音相对最低音最多可以升高多少（0–6个八度）。中间的音符会随机分布，但保持从低到高的顺序。选中多个选项时，每次随机选择跨度。',
+      chordSpreadTip: "不勾选时，和弦在一个八度内播放。“向上八度”——和弦最高音相对最低音升高所选的八度数（+1…+6），中间的音随机分布，但保持从低到高的顺序；选中多个选项时，每次随机选择。“开放和弦”——第二个音保持在所选八度，第一个音降低一个八度，第三个音比第二个音高一个八度，第四个音高两个八度，依此类推（C 大调，八度 4 → C3 E4 G5）。",
+      wideChordLabel: "宽和弦", wideModeOctaves: "向上八度", wideModeOpen: "开放和弦",
       spread0: '同一八度内', spread1: '+1个八度', spread2: '+2个八度', spread3: '+3个八度',
       spread4: '+4个八度', spread5: '+5个八度', spread6: '+6个八度',
       intervalDirTitle: '音程方向',
@@ -2618,6 +2733,8 @@ window.EAR_TRAINER_CONFIG = {
       anyLabel: '任意',
       exactLabel: '精确',
       showResult: '显示结果',
+      bass1TipChords: "在和弦下方额外弹奏的低音。“和弦第一个音”是根音，“和弦第二个音”是三级音（Sus2 中为二级，Sus4 和 7sus4 中为四级），“和弦第三个音”是五级音。音符按和弦原位计算，转位不影响。如果选择了多个音或八度，每次随机选择一个，需要在答题区判断。", bass1TipIntervals: "在音程下方额外弹奏的低音。“音程第一个音”是先响的音，“音程第二个音”是后响的音。“同时播放”或“音程上行”时，第一个音是低音（根音），第二个音是高音；“依次播放”且“音程下行”时则相反。如果选择了多个音或八度，每次随机选择一个，需要在答题区判断。", bass2TipChords: "第二个低音，始终低于低音1。音符与低音1相同：“和弦第一个音”是根音，“和弦第二个音”是三级音（Sus2 中为二级，Sus4 和 7sus4 中为四级），“和弦第三个音”是五级音；按和弦原位计算。如果选择了多个音或八度，每次随机选择一个，需要在答题区判断。", bass2TipIntervals: "第二个低音，始终低于低音1。音符与低音1相同：“音程第一个音”是先响的音，“音程第二个音”是后响的音（“依次播放”且“音程下行”时先响的是高音）。如果选择了多个音或八度，每次随机选择一个，需要在答题区判断。",
+      bassChordNote1: "和弦第一个音", bassChordNote2: "和弦第二个音", bassChordNote3: "和弦第三个音", bassIntervalNote1: "音程第一个音", bassIntervalNote2: "音程第二个音",
       bass1Label: '低音 - 单音', bass2Label: '低音 - 第二个音', bass2OctaveTitle: '低音2八度', bass2Word: '低音2',
       mistakeBass2: '低音2错误：你弹的是 ', mistakeBass2Oct: '低音2八度：你弹的是 ',
       alertNoBass2InRange: '低音2无法放在所选八度内的第一个低音下方——请选择更低的低音2八度或更高的低音八度。', bassChordNotesTitle: '和弦音', bassIntervalNotesTitle: '音程音',
@@ -2674,16 +2791,18 @@ window.EAR_TRAINER_CONFIG = {
       webMidiUnsupported: '此浏览器不支持 Web MIDI API。',
       midiConnected: 'MIDI 已连接。',
       midiAccessDenied: '浏览器未授予 MIDI 访问权限。',
-      wrongOrderIntervalDown: '顺序错误：音程下行——应先弹低音，再弹主音',
+      wrongOrderIntervalDown: '顺序错误：音程下行——应先弹高音，再弹主音',
       wrongOrderIntervalUp: '顺序错误：音程上行——应先弹主音，再弹高音',
       wrongOrderChord: '顺序错误：需要 ',
-      mistakeInterval: '音程：你弹的是 ', mistakeIntervalNeed: '，需要 ',
+      mistakeInterval: '音程：你弹的是 ', mistakeIntervalNeed: '，需要 ', mistakeIntervalNeedM: '，需要 ',
       mistakeChord: '和弦：你弹的是 ', mistakeChordNeed: '，需要 ',
       mistakeTonic: '主音不对：你弹的是 ', mistakeTonicNeed: '，需要 ',
       mistakeDirection: '方向：你弹的是 ', mistakeDirectionNeed: '，需要 ',
       mistakeInversion: '转位：你弹的是 ', mistakeInversionNeed: '，需要 ',
       mistakeOctave: '八度：你弹的是 ', mistakeOctaveNeed: '，需要 ',
       inversionFallback: '转位 ',
+      wrongOrderChordRoot: '顺序错误：需要原位', invNeedRoot: '，需要原位',
+      playTogether: '同时播放', playSequential: '依次播放', noteGapLabel: '音符间隔（秒）：',
     },
   };
 
@@ -2698,9 +2817,9 @@ window.EAR_TRAINER_CONFIG = {
     zh: { maj: '大三和弦', min: '小三和弦' },
   };
   const INVERSION_LABELS = {
-    ru: { 0: 'основной', 1: '1 обращение', 2: '2 обращение', 3: '3 обращение' },
-    en: { 0: 'root position', 1: '1st inversion', 2: '2nd inversion', 3: '3rd inversion' },
-    zh: { 0: '原位', 1: '第一转位', 2: '第二转位', 3: '第三转位' },
+    ru: { 0: 'основной', 1: '1 обращение', 2: '2 обращение', 3: '3 обращение', 4: '4 обращение', 5: '5 обращение', 6: '6 обращение' },
+    en: { 0: 'root position', 1: '1st inversion', 2: '2nd inversion', 3: '3rd inversion', 4: '4th inversion', 5: '5th inversion', 6: '6th inversion' },
+    zh: { 0: '原位', 1: '第一转位', 2: '第二转位', 3: '第三转位', 4: '第四转位', 5: '第五转位', 6: '第六转位' },
   };
   const INSTRUMENT_NAMES = {
     ru: { acoustic_grand_piano: 'Рояль (Grand Piano)', bright_acoustic_piano: 'Яркое пианино', electric_piano_1: 'Электропианино', harpsichord: 'Клавесин', acoustic_guitar_nylon: 'Гитара (нейлон)', acoustic_guitar_steel: 'Гитара (сталь)', violin: 'Скрипка', viola: 'Альт', cello: 'Виолончель', contrabass: 'Контрабас', trumpet: 'Труба', trombone: 'Тромбон', french_horn: 'Валторна', flute: 'Флейта', clarinet: 'Кларнет', oboe: 'Гобой', synth_strings_1: 'Синти-струнные', choir_aahs: 'Хор (Aah)' },
@@ -2754,30 +2873,41 @@ window.EAR_TRAINER_CONFIG = {
     { id: 'P8', name: 'Октава', semitones: 12 },
   ];
 
+  // Порядок и ряды — как в Circle of Fifths (3 кнопки в ряд);
+  // rowStart: true — кнопка начинает новый ряд в настройках
   const CHORDS = [
-    { id: 'maj', name: 'Мажор', intervals: [0, 4, 7] },
+    { id: 'maj', name: 'Мажор', intervals: [0, 4, 7], rowStart: true },
     { id: 'min', name: 'Минор', intervals: [0, 3, 7] },
-    { id: 'sus2', name: 'Sus2', intervals: [0, 2, 7] },
+    { id: 'dim', name: 'dim', intervals: [0, 3, 6] },
+    { id: 'sus2', name: 'Sus2', intervals: [0, 2, 7], rowStart: true },
     { id: 'sus4', name: 'Sus4', intervals: [0, 5, 7] },
-    { id: '7', name: '7', intervals: [0, 4, 7, 10] },
+    { id: 'aug', name: 'aug', intervals: [0, 4, 8] },
+    { id: '7', name: '7', intervals: [0, 4, 7, 10], rowStart: true },
     { id: 'maj7', name: 'maj7', intervals: [0, 4, 7, 11] },
     { id: 'm7', name: 'm7', intervals: [0, 3, 7, 10] },
-    { id: 'mMaj7', name: 'mMaj7', intervals: [0, 3, 7, 11] },
-    { id: 'add9', name: 'add9', intervals: [0, 4, 7, 14] },
+    { id: 'mMaj7', name: 'mMaj7', intervals: [0, 3, 7, 11], rowStart: true },
+    { id: '7b5', name: '7b5', intervals: [0, 4, 6, 10] },
+    { id: '7#5', name: '7#5', intervals: [0, 4, 8, 10] },
+    { id: '7sus4', name: '7sus4', intervals: [0, 5, 7, 10], rowStart: true },
+    { id: 'dim7', name: 'dim7', intervals: [0, 3, 6, 9] },
+    { id: 'm7b5', name: 'm7b5', intervals: [0, 3, 6, 10] },
+    { id: 'add9', name: 'add9', intervals: [0, 4, 7, 14], rowStart: true },
     { id: 'm(add9)', name: 'm(add9)', intervals: [0, 3, 7, 14] },
-    { id: '9', name: '9', intervals: [0, 4, 7, 10, 14] },
+    { id: '9', name: '9', intervals: [0, 4, 7, 10, 14], rowStart: true },
     { id: 'maj9', name: 'maj9', intervals: [0, 4, 7, 11, 14] },
     { id: 'm9', name: 'm9', intervals: [0, 3, 7, 10, 14] },
-    { id: 'm(maj9)', name: 'm(maj9)', intervals: [0, 3, 7, 11, 14] },
-    { id: 'add11', name: 'add11', intervals: [0, 4, 7, 17] },
+    { id: 'm(maj9)', name: 'm(maj9)', intervals: [0, 3, 7, 11, 14], rowStart: true },
+    { id: '6/9', name: '6/9', intervals: [0, 4, 7, 9, 14] },
+    { id: 'add11', name: 'add11', intervals: [0, 4, 7, 17], rowStart: true },
     { id: 'm(add11)', name: 'm(add11)', intervals: [0, 3, 7, 17] },
-    { id: '11', name: '11', intervals: [0, 4, 7, 10, 14, 17] },
+    { id: '11', name: '11', intervals: [0, 4, 7, 10, 14, 17], rowStart: true },
     { id: 'maj11', name: 'maj11', intervals: [0, 4, 7, 11, 14, 17] },
     { id: 'm11', name: 'm11', intervals: [0, 3, 7, 10, 14, 17] },
-    { id: '13', name: '13', intervals: [0, 4, 7, 10, 14, 17, 21] },
+    { id: 'm(maj11)', name: 'm(maj11)', intervals: [0, 3, 7, 11, 14, 17], rowStart: true },
+    { id: '13', name: '13', intervals: [0, 4, 7, 10, 14, 17, 21], rowStart: true },
     { id: 'maj13', name: 'maj13', intervals: [0, 4, 7, 11, 14, 17, 21] },
     { id: 'm13', name: 'm13', intervals: [0, 3, 7, 10, 14, 17, 21] },
-    { id: 'm(maj13)', name: 'm(maj13)', intervals: [0, 3, 7, 11, 14, 17, 21] },
+    { id: 'm(maj13)', name: 'm(maj13)', intervals: [0, 3, 7, 11, 14, 17, 21], rowStart: true },
   ];
 
   // ---------------- тональности (лады) ----------------
@@ -2795,12 +2925,15 @@ window.EAR_TRAINER_CONFIG = {
   ];
 
   // Аккорды, для которых доступны обращения
-  const INVERSION_CHORD_IDS = ['maj', 'min', 'sus2', 'sus4', '7', 'maj7', 'm7', 'mMaj7'];
+  const INVERSION_CHORD_IDS = CHORDS.map((c) => c.id);
   const INVERSIONS = [
     { i: 0, label: 'основной' },
     { i: 1, label: '1 обращение' },
     { i: 2, label: '2 обращение' },
     { i: 3, label: '3 обращение' },
+    { i: 4, label: '4 обращение' },
+    { i: 5, label: '5 обращение' },
+    { i: 6, label: '6 обращение' },
   ];
 
   // 12 клавиш пианино: расположение колонок как в новом дизайне (14-колоночная сетка)
@@ -2916,6 +3049,8 @@ window.EAR_TRAINER_CONFIG = {
     recentVariantIds: [],
     noteNaming: 'ABC',
     lang: 'ru',
+    playMode: 'together',
+    noteGapSec: 0.5,
   };
 
   // ---------------- сохранение настроек между перезагрузками страницы ----------------
@@ -2950,6 +3085,8 @@ window.EAR_TRAINER_CONFIG = {
     sidePanelPinned: true,
     settingsPosition: null,
     chordByNotes: true,
+    wideChord: false,
+    wideChordMode: 'octaves',
     keyFilter: false,
     keyTonic: 0,
     keyMode: 'major',
@@ -2964,6 +3101,8 @@ window.EAR_TRAINER_CONFIG = {
     bassDegIntervals: null,
     bassDegChords: null,
     bassOctaves: null,
+    playMode: 'together',
+    noteGapSec: 0.5,
   }, loadSavedSettings());
 
   if (isFirstVisit) {
@@ -3019,8 +3158,13 @@ window.EAR_TRAINER_CONFIG = {
     settingsCache.minVelocity = state.minVelocity;
     settingsCache.theme = document.body.getAttribute('data-theme') || '2';
     settingsCache.noteNaming = state.noteNaming;
+    settingsCache.playMode = state.playMode;
+    settingsCache.noteGapSec = state.noteGapSec;
     const chNotesCb = $('chordByNotesCheckbox');
     if (chNotesCb) settingsCache.chordByNotes = chNotesCb.checked;
+    const wideCb = $('wideChordCheckbox');
+    if (wideCb) settingsCache.wideChord = wideCb.checked;
+    settingsCache.wideChordMode = getWideChordMode();
     const keyCb = $('keyFilterCheckbox');
     if (keyCb) settingsCache.keyFilter = keyCb.checked;
     const posCheckbox = document.querySelector('.settings-position-checkbox:checked');
@@ -3184,11 +3328,20 @@ window.EAR_TRAINER_CONFIG = {
     row.style.display = show ? 'flex' : 'none';
     const bassBox = $('bassBox');
     if (bassBox) bassBox.style.display = show ? '' : 'none';
+    const playModeBox = $('playModeBox');
+    if (playModeBox) playModeBox.style.display = show ? '' : 'none';
     cb.checked = !!settingsCache.bass1;
     const cb2 = $('bass2Checkbox');
     if (cb2) cb2.checked = !!settingsCache.bassSecond;
     body.classList.toggle('bass-off', !show || !cb.checked);
     $('bass2Body').classList.toggle('bass-off', !settingsCache.bassSecond);
+
+    // Подсказки (i) у «Бас - одна нота» и «Бас - вторая нота» — свой текст для аккордов и интервалов
+    const tipSuffix = state.mode === 'intervals' ? 'Intervals' : 'Chords';
+    [['bass1Tip', 'bass1Tip'], ['bass2Tip', 'bass2Tip']].forEach(([id, key]) => {
+      const el = $(id);
+      if (el) { el.setAttribute('data-i18n', key + tipSuffix); el.textContent = t(key + tipSuffix); }
+    });
 
     const degGrid = $('bass-degree-grid');
     const count = state.mode === 'intervals' ? 2 : 3;
@@ -3201,7 +3354,7 @@ window.EAR_TRAINER_CONFIG = {
       const chip = document.createElement('div');
       const sel = (savedDeg && savedDeg.length) ? savedDeg.includes(d) : d === 0;
       chip.className = 'toggle-chip' + (sel ? ' selected' : '');
-      chip.textContent = t('bassNote' + (d + 1));
+      chip.textContent = t((state.mode === 'intervals' ? 'bassIntervalNote' : 'bassChordNote') + (d + 1));
       chip.dataset.deg = d;
       chip.addEventListener('click', () => {
         if (chip.classList.contains('selected') && degGrid.querySelectorAll('.toggle-chip.selected').length === 1) return;
@@ -3240,7 +3393,7 @@ window.EAR_TRAINER_CONFIG = {
       const chip = document.createElement('div');
       const sel = (savedDeg2 && savedDeg2.length) ? savedDeg2.includes(d) : d === 0;
       chip.className = 'toggle-chip' + (sel ? ' selected' : '');
-      chip.textContent = t('bassNote' + (d + 1));
+      chip.textContent = t((state.mode === 'intervals' ? 'bassIntervalNote' : 'bassChordNote') + (d + 1));
       chip.dataset.deg = d;
       chip.addEventListener('click', () => {
         if (chip.classList.contains('selected') && deg2Grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
@@ -3283,6 +3436,15 @@ window.EAR_TRAINER_CONFIG = {
   function getSelectedDirections() {
     return [...document.querySelectorAll('#direction-grid .toggle-chip.selected')].map((el) => el.dataset.dir);
   }
+  // Направление интервала действует только при «Сыграть по очереди»;
+  // при «Сыграть за раз» кнопки направления отключены и интервал всегда вверх
+  function getActiveDirections() {
+    return state.playMode === 'sequential' ? getSelectedDirections() : ['up'];
+  }
+  function updateDirectionAvailability() {
+    const off = state.playMode !== 'sequential';
+    document.querySelectorAll('#direction-grid .toggle-chip').forEach((chip) => chip.classList.toggle('disabled', off));
+  }
   function getSelectedSpreads() {
     return [...document.querySelectorAll('#spread-grid .toggle-chip.selected')].map((el) => parseInt(el.dataset.spread, 10));
   }
@@ -3324,13 +3486,12 @@ window.EAR_TRAINER_CONFIG = {
       if (!iv) return [];
       const semis = iv.semitones % 12;
       const root = target.answerPc;
-      // Интервал вверх — сначала тоника, потом верхняя (C → G).
-      // Интервал вниз — обратный порядок: сначала нижняя нота, потом тоника (F → C).
-      if (target.answerDir === 'down') {
-        const bottom = ((root - semis) % 12 + 12) % 12;
-        return [bottom, root];
-      }
-      return [root, (root + semis) % 12];
+      // Интервал всегда строится вверх от выбранной ноты (C + кварта → C F).
+      // «Сыграть по очереди»: набирается в порядке звучания (вверх — C → F, вниз — F → C).
+      // «Сыграть за раз»: порядок не важен (засчитывается и C → F, и F → C).
+      const top = (root + semis) % 12;
+      if (target.answerDir === 'down' && intervalOrderMatters()) return [top, root];
+      return [root, top];
     }
     if (target.type === 'chords') {
       const chord = CHORDS.find((c) => c.id === target.answerId);
@@ -3344,6 +3505,31 @@ window.EAR_TRAINER_CONFIG = {
       return seq;
     }
     return [];
+  }
+
+  // Порядок нот интервала важен только при «Сыграть по очереди»
+  function intervalOrderMatters() { return state.playMode === 'sequential'; }
+
+  // Верно ли набраны ноты ответа (без учёта октав, баса).
+  // Интервал при «Сыграть за раз» — в любом порядке.
+  // Аккорд без обращений (add9 и т.п.) — нужные ноты в любом порядке.
+  function seqAltMatch(target, seq) {
+    const expected = expectedPcSequence(target);
+    if (seq.length !== expected.length) return false;
+    if (target.type === 'intervals' && !intervalOrderMatters()) {
+      return arraysEqual(seq, expected.slice().reverse());
+    }
+    if (target.type === 'chords' && !INVERSION_CHORD_IDS.includes(target.answerId)) {
+      return arraysEqual(uniqSorted(seq), uniqSorted(expected)) && new Set(seq).size === seq.length;
+    }
+    return false;
+  }
+  function seqMatches(target, seq) {
+    return arraysEqual(seq, expectedPcSequence(target)) || seqAltMatch(target, seq);
+  }
+  // Ожидаемая последовательность для подсветки: если ответ засчитан в другом порядке — тот порядок
+  function effectiveExpected(target) {
+    return seqAltMatch(target, state.pendingSeq) ? state.pendingSeq.slice() : expectedPcSequence(target);
   }
 
   function pcName(pc) { const k = PIANO_KEYS.find((k) => k.pc === pc); return pianoKeyLabel(pc, !!(k && k.black)); }
@@ -3378,6 +3564,8 @@ window.EAR_TRAINER_CONFIG = {
   }
   function ivNameById(id) { const iv = INTERVALS.find((i) => i.id === id); return iv ? iv.name.toLowerCase() : null; }
   function chNameById(id) { const c = CHORDS.find((c) => c.id === id); return c ? c.name : null; }
+  // «нужна» для интервалов женского рода, «нужен» — для тритона
+  function ivNeedWord(id) { return id === 'TT' ? t('mistakeIntervalNeedM') : t('mistakeIntervalNeed'); }
   function dirLabel(d) { return d === 'down' ? t('intervalDown') : t('intervalUp'); }
 
   // Октава ответа везде считается по тонике (она всегда звучит в выбранной октаве)
@@ -3399,22 +3587,27 @@ window.EAR_TRAINER_CONFIG = {
           ? t('wrongOrderIntervalDown')
           : t('wrongOrderIntervalUp'));
       } else {
-        reasons.push(t('wrongOrderChord') + invLabel(target.inversion || 0));
+        reasons.push((target.inversion || 0) === 0 ? t('wrongOrderChordRoot') : t('wrongOrderChord') + invLabel(target.inversion));
       }
     } else if (!sameSet) {
       if (target.type === 'intervals' && mine.length >= 2) {
-        let semis = ((mine[1] - mine[0]) % 12 + 12) % 12;
+        // При интервале вниз ноты набираются сверху вниз (F → C)
+        let semis = (target.answerDir === 'down' && intervalOrderMatters())
+          ? ((mine[0] - mine[1]) % 12 + 12) % 12
+          : ((mine[1] - mine[0]) % 12 + 12) % 12;
         if (semis === 0) semis = 12;
         const played = INTERVALS.find((i) => i.semitones === semis);
         const needName = ivNameById(target.answerId);
         if (played && needName && played.name.toLowerCase() !== needName) {
-          reasons.push(t('mistakeInterval') + played.name.toLowerCase() + t('mistakeIntervalNeed') + needName);
+          reasons.push(t('mistakeInterval') + played.name.toLowerCase() + ivNeedWord(target.answerId) + needName);
         }
       }
       if (target.type === 'chords' && mine.length) {
         const pcs = uniqSorted(mine);
         let match = null;
-        for (const root of pcs) {
+        // Сначала — тоника вопроса (у dim7, aug, 7b5 одни и те же ноты дают несколько тоник)
+        const roots = pcs.includes(target.answerPc) ? [target.answerPc, ...pcs.filter((p) => p !== target.answerPc)] : pcs;
+        for (const root of roots) {
           const rel = uniqSorted(pcs.map((p) => ((p - root) % 12 + 12) % 12));
           const found = CHORDS.find((c) => arraysEqual(uniqSorted(c.intervals.map((s) => s % 12)), rel));
           if (found) { match = { chord: found, root: root }; break; }
@@ -3474,7 +3667,7 @@ window.EAR_TRAINER_CONFIG = {
     if (state.pendingChoiceId !== null && state.pendingChoiceId !== target.answerId) {
       if (target.type === 'intervals') {
         const mineName = ivNameById(state.pendingChoiceId);
-        if (mineName) reasons.push(t('mistakeInterval') + mineName + t('mistakeIntervalNeed') + ivNameById(target.answerId));
+        if (mineName) reasons.push(t('mistakeInterval') + mineName + ivNeedWord(target.answerId) + ivNameById(target.answerId));
       } else if (target.type === 'chords') {
         const mineName = chNameById(state.pendingChoiceId);
         if (mineName) reasons.push(t('mistakeChord') + mineName + t('mistakeChordNeed') + chNameById(target.answerId));
@@ -3485,7 +3678,7 @@ window.EAR_TRAINER_CONFIG = {
     }
     if (target.type === 'chords' && state.pendingInv !== null && typeof target.inversion === 'number'
       && INVERSION_CHORD_IDS.includes(target.answerId) && state.pendingInv !== target.inversion) {
-      reasons.push(t('mistakeInversion') + invLabel(state.pendingInv) + t('mistakeInversionNeed') + invLabel(target.inversion));
+      reasons.push(t('mistakeInversion') + invLabel(state.pendingInv) + (target.inversion === 0 ? t('invNeedRoot') : t('mistakeInversionNeed') + invLabel(target.inversion)));
     }
     const needOct = targetBaseOct(target);
     if (octChecked && state.pendingOct !== null && needOct !== null && state.pendingOct !== needOct) {
@@ -3525,6 +3718,12 @@ window.EAR_TRAINER_CONFIG = {
         mineHtml += ', ' + t('bass2Word') + ' ' + colorToken(state.pendingBass2Pc !== null ? pcName(state.pendingBass2Pc) : '—', okBass2);
         expectedHtml += ', ' + t('bass2Word') + ' ' + colorToken(pcName(target.bass2.pc), okBass2);
       }
+      if (target.type === 'chords' && neededChordName(target)) {
+        // Название зелёное, если набраны именно ноты нужного аккорда (порядок не важен), иначе красное
+        const okName = arraysEqual(uniqSorted(state.pendingSeq), uniqSorted(expected))
+          && state.pendingSeq.length === expected.length;
+        expectedHtml += ' — ' + colorToken(neededChordName(target), okName);
+      }
       parts.push(t('youEntered') + mineHtml
         + '   |   ' + t('needed') + expectedHtml);
       const r = seqMistakeReasons(target);
@@ -3536,13 +3735,21 @@ window.EAR_TRAINER_CONFIG = {
       const playedHtml = state.lastPlayedNotes
         .map((n) => colorToken(midiToName(n), neededPcs.includes(pcOfMidi(n))))
         .join(' ');
-      const neededNotesSorted = uniqSorted(allTargetNotes(target));
+      // Для интервала «Нужно» показываем в порядке звучания
+      let neededNotesSorted = uniqSorted(allTargetNotes(target));
+      if (target.type === 'intervals' && target.notes && target.notes.length === 2) {
+        const ivOrder = (target.answerDir === 'down' && intervalOrderMatters()) ? target.notes.slice().reverse() : target.notes.slice();
+        neededNotesSorted = [...(target.bass2 ? [target.bass2.midi] : []), ...(target.bass ? [target.bass.midi] : []), ...ivOrder];
+      }
       const playedPcs = state.lastPlayedNotes.map(pcOfMidi);
       const neededHtml = neededNotesSorted
         .map((n) => colorToken(midiToName(n), playedPcs.includes(pcOfMidi(n))))
         .join(' ');
+      // Название зелёное, если сыгран нужный аккорд от нужной тоники (обращение не важно), иначе красное
+      const okName = state.pendingChoiceId === target.answerId && state.pendingPc === target.answerPc;
+      const chordNameHtml = (target.type === 'chords' && neededChordName(target)) ? ' — ' + colorToken(neededChordName(target), okName) : '';
       parts.push(t('youPlayed') + playedHtml
-        + '   |   ' + t('needed') + neededHtml);
+        + '   |   ' + t('needed') + neededHtml + chordNameHtml);
     }
     const r = compositeMistakeReasons(target);
     if (r.length) parts.push(r.join('; '));
@@ -3589,7 +3796,7 @@ window.EAR_TRAINER_CONFIG = {
     if (needBassOct && state.pendingBassOct === null) return;
     if (!bass2AnswerReady(target)) return;
 
-    const seqOk = arraysEqual(state.pendingSeq, expected);
+    const seqOk = seqMatches(target, state.pendingSeq);
     const correct = seqOk && (!needsOct || state.pendingOct === target.answerOct)
       && (!needBass || state.pendingBassPc === target.bass.pc)
       && (!needBassOct || state.pendingBassOct === target.bass.oct)
@@ -3609,33 +3816,74 @@ window.EAR_TRAINER_CONFIG = {
   // Позиция аккорда потом сдвигается так, чтобы его НИЖНЯЯ нота попала
   // в выбранную октаву (A мажор, 4 октава, 1 обращение → C#4 E4 A4).
   function applyInversion(intervals, inv) {
-    const arr = intervals.slice();
-    for (let k = 0; k < inv && k < arr.length; k++) arr[k] += 12;
+    const arr = intervals.slice().sort((a, b) => a - b);
+    if (!inv || inv >= arr.length) return arr;
+    // Нижней становится inv-я нота аккорда; ноты ниже неё переносятся на октаву(ы) вверх — над ней
+    // (Cm11, 4 обращение → D Eb F G Bb C)
+    const bass = arr[inv];
+    for (let k = 0; k < inv; k++) { while (arr[k] <= bass) arr[k] += 12; }
     return arr.sort((a, b) => a - b);
   }
 
   function getMidiChannel() { return CFG.defaultMidiChannel || 1; }
 
+  // Подсказка «MIDI-выход не выбран» видна 3 секунды; каждое новое срабатывание отсчитывает 3 секунды заново
+  let midiStatusHideTimer = null;
+  const MIDI_OUT_WARN_MS = 3000;
+  function showMidiOutWarning() {
+    showMidiStatus(t('midiOutNotSelected'), true);
+    midiStatusHideTimer = setTimeout(() => {
+      midiStatusHideTimer = null;
+      $('midiStatus').textContent = '';
+    }, MIDI_OUT_WARN_MS);
+  }
+
   function showMidiStatus(msg, isError) {
+    if (midiStatusHideTimer) { clearTimeout(midiStatusHideTimer); midiStatusHideTimer = null; }
     const el = $('midiStatus');
     el.textContent = msg;
     el.style.color = isError ? 'var(--bad-color)' : 'var(--text-hint)';
   }
 
   // ---------------- generation ----------------
-  // Если вариантов (нот/интервалов/аккордов в сумме, в зависимости от режима) больше 5,
-  // исключаем из выбора те 2 варианта, что выпадали последними, чтобы не было повторов подряд.
+  // Сколько последних вариантов исключать: 4+ вариантов — последний, 8+ — 2 последних, 12+ — 3 последних.
+  function recentExcludeCount(total) {
+    if (total >= 12) return 3;
+    if (total >= 8) return 2;
+    if (total >= 4) return 1;
+    return 0;
+  }
+
+  function recentToExclude(total) {
+    const n = recentExcludeCount(total);
+    return n > 0 ? state.recentVariantIds.slice(-n) : [];
+  }
+
+  // Ноты: число вариантов = число выбранных нот.
   function pickPoolAvoidingRecent(basePool, idFn) {
-    if (basePool.length > 5 && state.recentVariantIds.length > 0) {
-      const filtered = basePool.filter((it) => !state.recentVariantIds.includes(idFn(it)));
+    const exclude = recentToExclude(new Set(basePool.map(idFn)).size);
+    if (exclude.length > 0) {
+      const filtered = basePool.filter((it) => !exclude.includes(idFn(it)));
       if (filtered.length > 0) return filtered;
     }
     return basePool;
   }
 
+  // Вариант — сочетание: ноты — «нота + октава», интервалы — «тоника + интервал + октава»,
+  // аккорды — «тоника + аккорд + обращение + октава» (например «C мажор, 1 обращение, окт. 4»).
+  // Число вариантов = число таких сочетаний (ноты × интервалы/аккорды).
+  function combosAvoidingRecent(combos, keyFn) {
+    const exclude = recentToExclude(new Set(combos.map(keyFn)).size);
+    if (exclude.length > 0) {
+      const filtered = combos.filter((it) => !exclude.includes(keyFn(it)));
+      if (filtered.length > 0) return filtered;
+    }
+    return combos;
+  }
+
   function rememberVariant(id) {
     state.recentVariantIds.push(id);
-    if (state.recentVariantIds.length > 2) state.recentVariantIds.shift();
+    if (state.recentVariantIds.length > 3) state.recentVariantIds.shift();
   }
 
   function generateTarget() {
@@ -3649,13 +3897,22 @@ window.EAR_TRAINER_CONFIG = {
         pool = pool.filter(pcInKey);
         if (pool.length === 0) { showKeyEmptyInfo(); return null; }
       }
-      const usePool = pickPoolAvoidingRecent(pool, (pc) => String(pc));
+      // Вариант — сочетание «нота + октава»; считаем только те, что помещаются в диапазон
+      const noteCombos = [];
+      pool.forEach((pc) => octaves.forEach((oct) => {
+        const m = pcOctaveToMidi(pc, oct);
+        if (m >= MIN_MIDI && m <= MAX_MIDI) noteCombos.push({ pc, oct });
+      }));
+      if (noteCombos.length === 0) { showGenError('alertNoNoteInRange'); return null; }
+      const noteComboKey = (c) => c.pc + '|' + c.oct;
+      const useNoteCombos = combosAvoidingRecent(noteCombos, noteComboKey);
       for (let a = 0; a < 60; a++) {
-        const pc = usePool[randInt(usePool.length)];
-        const oct = octaves[randInt(octaves.length)];
+        const combo = useNoteCombos[randInt(useNoteCombos.length)];
+        const pc = combo.pc;
+        const oct = combo.oct;
         const midi = pcOctaveToMidi(pc, oct);
         if (midi >= MIN_MIDI && midi <= MAX_MIDI) {
-          rememberVariant(String(pc));
+          rememberVariant(noteComboKey(combo));
           return { type: 'notes', answerId: String(pc), answerOct: oct, notes: [midi], velocities: [randVelocity()] };
         }
       }
@@ -3668,8 +3925,8 @@ window.EAR_TRAINER_CONFIG = {
       if (pool.length === 0) { showGenError('alertNoInterval'); return null; }
       const rootPcs = getSelectedRootPcs();
       if (rootPcs.length === 0) { showGenError('alertNoRootForInterval'); return null; }
-      const usePool = pickPoolAvoidingRecent(pool, (iv) => iv.id);
-      const dirPool = getSelectedDirections();
+      const usePool = pool;
+      const dirPool = getActiveDirections();
       if (dirPool.length === 0) { showGenError('alertNoDirection'); return null; }
       const spreadPool = getSelectedSpreads();
       if (spreadPool.length === 0) { showGenError('alertNoIntervalSpread'); return null; }
@@ -3677,39 +3934,37 @@ window.EAR_TRAINER_CONFIG = {
       // При включённом фильтре остаются только те, где обе ноты входят в тональность.
       const ivCombos = [];
       rootPcs.forEach((pc) => usePool.forEach((iv) => dirPool.forEach((dir) => {
-        if (intervalFitsKey(pc, iv.semitones, dir)) ivCombos.push({ pc, iv, dir });
+        if (intervalFitsKey(pc, iv.semitones, dir)) octaves.forEach((oct) => ivCombos.push({ pc, iv, dir, oct }));
       })));
       if (ivCombos.length === 0) { showKeyEmptyInfo(); return null; }
+      const ivComboKey = (c) => c.pc + '|' + c.iv.id + '|' + c.oct;
+      const useIvCombos = combosAvoidingRecent(ivCombos, ivComboKey);
       let bassFailed = false;
       for (let a = 0; a < 200; a++) {
-        const combo = ivCombos[randInt(ivCombos.length)];
+        const combo = useIvCombos[randInt(useIvCombos.length)];
         const pc = combo.pc;
-        const oct = octaves[randInt(octaves.length)];
+        const oct = combo.oct;
         const root = pcOctaveToMidi(pc, oct);
         const iv = combo.iv;
         const dir = combo.dir;
         const spread = spreadPool[randInt(spreadPool.length)];
         const semis = iv.semitones + 12 * spread;
-        let notes, ok;
-        if (dir === 'down') {
-          const bottom = root - semis;
-          notes = [root, bottom];
-          ok = bottom >= MIN_MIDI && root <= MAX_MIDI;
-        } else {
-          const top = root + semis;
-          notes = [root, top];
-          ok = root >= MIN_MIDI && top <= MAX_MIDI;
-        }
+        // Интервал всегда строится вверх от выбранной ноты (C + кварта → C4 F4).
+        // Направление влияет только на порядок звучания: вверх C4 → F4, вниз F4 → C4.
+        const top = root + semis;
+        const notes = [root, top];
+        const ok = root >= MIN_MIDI && top <= MAX_MIDI;
         if (ok) {
           let bass = null;
           let bass2 = null;
           if (isBassOn()) {
-            // Первая нота — тоника интервала, вторая — другая нота интервала
-            const pair = pickBassPair([pcOfMidi(notes[0]), pcOfMidi(notes[1])], Math.min(...notes));
+            // Первая/вторая нота интервала — в порядке звучания (вверх: C, F; вниз: F, C)
+            const soundPcs = (dir === 'down' && intervalOrderMatters()) ? [pcOfMidi(top), pcOfMidi(root)] : [pcOfMidi(root), pcOfMidi(top)];
+            const pair = pickBassPair(soundPcs, root);
             if (pair.fail) { bassFailed = pair.fail; continue; }
             bass = pair.bass; bass2 = pair.bass2;
           }
-          rememberVariant(iv.id);
+          rememberVariant(ivComboKey(combo));
           return { type: 'intervals', answerId: iv.id, answerPc: pc, answerOct: oct, answerDir: dir, notes, velocities: notes.map(randVelocity), bass, bassVelocity: randVelocity(), bass2, bass2Velocity: randVelocity() };
         }
       }
@@ -3722,7 +3977,7 @@ window.EAR_TRAINER_CONFIG = {
     if (pool.length === 0) { showGenError('alertNoChord'); return null; }
     const chordRootPcs = getSelectedRootPcs();
     if (chordRootPcs.length === 0) { showGenError('alertNoRootForChord'); return null; }
-    const useChordPool = pickPoolAvoidingRecent(pool, (c) => c.id);
+    const useChordPool = pool;
     const invSel = getSelectedInversions();
     // Пары «аккорд + обращение»: обращения работают только для перечисленных аккордов
     const chordVariants = [];
@@ -3734,20 +3989,23 @@ window.EAR_TRAINER_CONFIG = {
       }
     });
     if (chordVariants.length === 0) { showGenError('alertNoInversion'); return null; }
-    const chordSpreadPool = getSelectedChordSpreads();
+    // Галка «Широкий аккорд» выключена — аккорд в одной октаве; «Октавы вверх» — выбранные +1…+6
+    const chordSpreadPool = (isWideChordOn() && getWideChordMode() === 'octaves') ? getSelectedChordSpreads() : [0];
     if (chordSpreadPool.length === 0) { showGenError('alertNoChordSpread'); return null; }
     // Допустимые сочетания «ступень + аккорд».
     // При включённом фильтре остаются только аккорды, все ноты которых входят в тональность.
     const chordCombos = [];
     chordRootPcs.forEach((pc) => chordVariants.forEach((v) => {
-      if (chordFitsKey(v.chord, pc)) chordCombos.push({ pc, variant: v });
+      if (chordFitsKey(v.chord, pc)) octaves.forEach((oct) => chordCombos.push({ pc, variant: v, oct }));
     }));
     if (chordCombos.length === 0) { showKeyEmptyInfo(); return null; }
+    const chordComboKey = (c) => c.pc + '|' + c.variant.chord.id + '|' + c.variant.inv + '|' + c.oct;
+    const useChordCombos = combosAvoidingRecent(chordCombos, chordComboKey);
     let chordBassFailed = false;
     for (let a = 0; a < 200; a++) {
-      const combo = chordCombos[randInt(chordCombos.length)];
+      const combo = useChordCombos[randInt(useChordCombos.length)];
       const pc = combo.pc;
-      const oct = octaves[randInt(octaves.length)];
+      const oct = combo.oct;
       const variant = combo.variant;
       const chord = variant.chord;
       const chordSpread = chordSpreadPool[randInt(chordSpreadPool.length)];
@@ -3756,7 +4014,10 @@ window.EAR_TRAINER_CONFIG = {
       const bassOffset = invIntervals[0];
       const bassPc = ((pc + bassOffset) % 12 + 12) % 12;
       const bass = pcOctaveToMidi(bassPc, oct);
-      const notes = applyChordSpread(invIntervals, chordSpread).map((s) => bass + s - bassOffset);
+      const openChord = isOpenChordOn();
+      const notes = openChord
+        ? openChordNotes(pc, invIntervals, oct)
+        : applyChordSpread(invIntervals, chordSpread).map((s) => bass + s - bassOffset);
       if (notes[0] >= MIN_MIDI && notes[notes.length - 1] <= MAX_MIDI) {
         let bass = null;
         let bass2 = null;
@@ -3767,8 +4028,8 @@ window.EAR_TRAINER_CONFIG = {
           if (pair.fail) { chordBassFailed = pair.fail; continue; }
           bass = pair.bass; bass2 = pair.bass2;
         }
-        rememberVariant(chord.id);
-        return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, inversion: variant.inv, notes, velocities: notes.map(randVelocity), bass, bassVelocity: randVelocity(), bass2, bass2Velocity: randVelocity() };
+        rememberVariant(chordComboKey(combo));
+        return { type: 'chords', answerId: chord.id, answerPc: pc, answerOct: oct, inversion: variant.inv, open: openChord, notes, velocities: notes.map(randVelocity), bass, bassVelocity: randVelocity(), bass2, bass2Velocity: randVelocity() };
       }
     }
     if (chordBassFailed) { showGenError(chordBassFailed); return null; }
@@ -3788,9 +4049,34 @@ window.EAR_TRAINER_CONFIG = {
 
   function debugLabelForTarget(target) {
     if (!target || !target.notes) return '';
-    const main = target.notes.map(midiToName).join(', ');
+    let main = target.notes.map(midiToName).join(', ');
+    if (target.type === 'chords') main += ' — ' + debugChordName(target);
     const b2 = target.bass2 ? t('bass2Word') + ' ' + midiToName(target.bass2.midi) + ' | ' : '';
     return b2 + (target.bass ? t('bassWord') + ' ' + midiToName(target.bass.midi) + ' | ' + main : main);
+  }
+
+  // Название аккорда для подсказки: «C мажор», «Cm7», для обращений — «C мажор, 1 обращение»
+  function debugChordName(target) {
+    const c = CHORDS.find((x) => x.id === target.answerId);
+    if (!c) return '';
+    const root = noteName(target.answerPc);
+    let name = (c.id === 'maj' || c.id === 'min')
+      ? root + (getLang() === 'zh' ? '' : ' ') + c.name.toLowerCase()
+      : root + c.name;
+    const inv = INVERSION_CHORD_IDS.includes(c.id) ? (target.inversion || 0) : 0;
+    if (inv > 0) name += ', ' + invLabel(inv);
+    return name;
+  }
+
+  // Название нужного аккорда для строки результата: «C мажор», «Cm7» (без обращения)
+  function neededChordName(target) {
+    if (!target || target.type !== 'chords') return '';
+    const c = CHORDS.find((x) => x.id === target.answerId);
+    if (!c) return '';
+    const root = noteName(target.answerPc);
+    return (c.id === 'maj' || c.id === 'min')
+      ? root + (getLang() === 'zh' ? '' : ' ') + c.name.toLowerCase()
+      : root + c.name;
   }
 
   function updateDebugAnswer() {
@@ -3804,7 +4090,8 @@ window.EAR_TRAINER_CONFIG = {
   document.addEventListener('keydown', (e) => {
     if (e.code !== 'KeyZ') return;
     const tag = document.activeElement ? document.activeElement.tagName : '';
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (tag === 'SELECT') e.preventDefault();
     debugAnswerVisible = !debugAnswerVisible;
     updateDebugAnswer();
   });
@@ -3816,9 +4103,11 @@ window.EAR_TRAINER_CONFIG = {
   const KEY_CODE_TO_PC = { KeyC: 0, KeyD: 2, KeyE: 4, KeyF: 5, KeyG: 7, KeyA: 9, KeyB: 11 };
   let flatPrefixArmed = false;
 
+  // Выпадающие списки (тема, тембр, MIDI) полем ввода не считаются:
+  // после выбора в них клавиатура дальше отвечает на вопросы
   function isTypingField() {
     const tag = document.activeElement ? document.activeElement.tagName : '';
-    return tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+    return tag === 'INPUT' || tag === 'TEXTAREA';
   }
 
   function pressPcFromKeyboard(pc) {
@@ -3934,10 +4223,10 @@ window.EAR_TRAINER_CONFIG = {
   }
   function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 
-  function builtinSynthPlay(midi, gain, durationSec) {
+  function builtinSynthPlay(midi, gain, durationSec, startOffsetSec) {
     const ctx = ensureAudioCtx();
     const freq = midiToFreq(midi);
-    const t0 = ctx.currentTime;
+    const t0 = ctx.currentTime + (startOffsetSec || 0);
     const master = ctx.createGain();
     master.gain.value = 0;
     master.connect(builtinBus);
@@ -3984,20 +4273,21 @@ window.EAR_TRAINER_CONFIG = {
     }
   }
 
-  async function playOnline(notes, velocities) {
+  async function playOnline(notes, velocities, delays) {
     ensureAudioCtx();
     const volMult = (state.onlineVolume / 100) * 2;
+    const dl = (i) => (delays ? delays[i] : 0);
     if (state.onlineInstrument === 'builtin') {
-      notes.forEach((n, i) => builtinSynthPlay(n, (velocities[i] / 127) * volMult, CFG.noteDurationMs / 1000));
+      notes.forEach((n, i) => builtinSynthPlay(n, (velocities[i] / 127) * volMult, CFG.noteDurationMs / 1000, dl(i)));
       return;
     }
     const inst = await loadSoundfontInstrument(state.onlineInstrument);
     if (!inst) {
-      notes.forEach((n, i) => builtinSynthPlay(n, (velocities[i] / 127) * volMult, CFG.noteDurationMs / 1000));
+      notes.forEach((n, i) => builtinSynthPlay(n, (velocities[i] / 127) * volMult, CFG.noteDurationMs / 1000, dl(i)));
       return;
     }
     notes.forEach((n, i) => {
-      inst.play(n, audioCtx.currentTime, { gain: (velocities[i] / 127) * volMult, duration: CFG.noteDurationMs / 1000 });
+      inst.play(n, audioCtx.currentTime + dl(i), { gain: (velocities[i] / 127) * volMult, duration: CFG.noteDurationMs / 1000 });
     });
   }
 
@@ -4008,24 +4298,48 @@ window.EAR_TRAINER_CONFIG = {
     return midiAccess.outputs.get(id) || null;
   }
 
-  function playDAW(notes, velocities) {
+  function playDAW(notes, velocities, delays) {
     const output = getSelectedMidiOutput();
-    if (!output) { showMidiStatus(t('midiOutNotSelected'), true); return; }
+    if (!output) { showMidiOutWarning(); return; }
     const ch = (getMidiChannel() - 1) & 0x0f;
     notes.forEach((n, i) => {
-      const delay = i * CFG.chordStrumMs;
+      const delay = delays ? delays[i] * 1000 : i * CFG.chordStrumMs;
       setTimeout(() => output.send([0x90 | ch, n, velocities[i]]), delay);
       setTimeout(() => output.send([0x80 | ch, n, 0]), delay + CFG.noteDurationMs);
     });
   }
 
+  function getNoteGapSec() {
+    const v = Number(state.noteGapSec);
+    return (isFinite(v) && v >= 0) ? v : 0.5;
+  }
+
   function playTarget(target) {
     if (!target) return;
-    const notes = allTargetNotes(target);
-    const vels = target.bass ? [target.bassVelocity || randVelocity(), ...target.velocities] : target.velocities.slice();
-    if (target.bass2) vels.unshift(target.bass2Velocity || randVelocity());
-    if (state.outputMode === 'online') playOnline(notes, vels);
-    else playDAW(notes, vels);
+    // «Сыграть по очереди» (интервалы и аккорды): ноты звучат одна за другой
+    // через «Интервал между нотами». Интервал вверх — от нижней ноты, вниз — от верхней,
+    // аккорд — снизу вверх. Бас (и бас 2) звучит вместе с первой нотой.
+    const sequential = state.playMode === 'sequential' && (target.type === 'intervals' || target.type === 'chords');
+    if (!sequential) {
+      const notes = allTargetNotes(target);
+      const vels = target.bass ? [target.bassVelocity || randVelocity(), ...target.velocities] : target.velocities.slice();
+      if (target.bass2) vels.unshift(target.bass2Velocity || randVelocity());
+      if (state.outputMode === 'online') playOnline(notes, vels);
+      else playDAW(notes, vels);
+      return;
+    }
+    const main = target.notes.slice();
+    const mainVels = target.velocities.slice();
+    if (target.type === 'intervals' && target.answerDir === 'down') { main.reverse(); mainVels.reverse(); }
+    const gap = getNoteGapSec();
+    const notes = [];
+    const vels = [];
+    const delays = [];
+    if (target.bass2) { notes.push(target.bass2.midi); vels.push(target.bass2Velocity || randVelocity()); delays.push(0); }
+    if (target.bass) { notes.push(target.bass.midi); vels.push(target.bassVelocity || randVelocity()); delays.push(0); }
+    main.forEach((n, i) => { notes.push(n); vels.push(mainVels[i]); delays.push(i * gap); });
+    if (state.outputMode === 'online') playOnline(notes, vels, delays);
+    else playDAW(notes, vels, delays);
   }
 
   // ---------------- Web MIDI ----------------
@@ -4042,6 +4356,26 @@ window.EAR_TRAINER_CONFIG = {
     } catch (e) {
       showMidiStatus(t('midiAccessDenied'), true);
     }
+  }
+
+  // Выбранные MIDI-вход и выход запоминаются: после перезагрузки страницы
+  // при нажатии «Подключить MIDI» сразу подставляются они (по id, иначе по имени).
+  const MIDI_IN_SAVE_KEY = 'earTrainerMidiIn';
+  const MIDI_OUT_SAVE_KEY = 'earTrainerMidiOut';
+  function saveMidiPortChoice(key, sel) {
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt || !opt.value) return;
+    try { localStorage.setItem(key, JSON.stringify({ id: opt.value, name: opt.textContent })); } catch (e) {}
+  }
+  function findSavedMidiPort(key, sel) {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
+    if (!saved) return null;
+    const opts = [...sel.options];
+    const byId = opts.find((o) => o.value === saved.id);
+    if (byId) return byId.value;
+    const byName = opts.find((o) => o.textContent === saved.name);
+    return byName ? byName.value : null;
   }
 
   function populateMidiPortSelects() {
@@ -4062,7 +4396,9 @@ window.EAR_TRAINER_CONFIG = {
       inSel.appendChild(opt);
     }
     if ([...outSel.options].some((o) => o.value === prevOut)) outSel.value = prevOut;
+    else { const savedOut = findSavedMidiPort(MIDI_OUT_SAVE_KEY, outSel); if (savedOut) outSel.value = savedOut; }
     if ([...inSel.options].some((o) => o.value === prevIn)) inSel.value = prevIn;
+    else { const savedIn = findSavedMidiPort(MIDI_IN_SAVE_KEY, inSel); if (savedIn) inSel.value = savedIn; }
     attachMidiInputListener();
   }
 
@@ -4216,12 +4552,20 @@ window.EAR_TRAINER_CONFIG = {
       if (notes.length !== 2) return false;
       const need = uniqSorted(target.notes.map(pcOfMidi));
       if (!arraysEqual(pcs, need)) return false;
+      // «Сыграть за раз»: порядок нажатия не важен, тоника — нижняя сыгранная нота
+      if (!intervalOrderMatters()) {
+        if (pcOfMidi(notes[0]) !== target.answerPc) return false;
+        if (exactOct && octaveOfMidi(notes[0]) !== target.answerOct) return false;
+        return true;
+      }
+      // «Сыграть по очереди»: ноты нажимаются в порядке звучания: вверх — C, потом F выше; вниз — F, потом C ниже
       const firstNote = playedNotes[0];
       const lastNote = playedNotes[playedNotes.length - 1];
-      if (pcOfMidi(firstNote) !== target.answerPc) return false;
       const playedDir = lastNote > firstNote ? 'up' : (lastNote < firstNote ? 'down' : null);
       if (playedDir !== target.answerDir) return false;
-      if (exactOct && octaveOfMidi(firstNote) !== target.answerOct) return false;
+      const rootNote = target.answerDir === 'down' ? lastNote : firstNote;
+      if (pcOfMidi(rootNote) !== target.answerPc) return false;
+      if (exactOct && octaveOfMidi(rootNote) !== target.answerOct) return false;
       return true;
     }
 
@@ -4232,11 +4576,16 @@ window.EAR_TRAINER_CONFIG = {
     if (!arraysEqual(pcs, needChord)) return false;
     // Ступень (обращение): сверяем нижнюю ноту — набранный аккорд должен быть
     // ровно в нужном обращении (для аккордов без обращений — ровно в основном виде)
-    const invIntervals = applyInversion(chord.intervals, target.inversion || 0);
-    const bassPc = ((target.answerPc + invIntervals[0]) % 12 + 12) % 12;
-    if (pcOfMidi(notes[0]) !== bassPc) return false;
+    // Аккорды без обращений (add9 и т.п.) засчитываются в любом расположении нот
+    if (INVERSION_CHORD_IDS.includes(chord.id)) {
+      const invIntervals = applyInversion(chord.intervals, target.inversion || 0);
+      const bassPc = ((target.answerPc + invIntervals[0]) % 12 + 12) % 12;
+      if (pcOfMidi(notes[0]) !== bassPc) return false;
+    }
     // Октава сверяется по нижней ноте аккорда — она и есть выбранная октава
-    if (exactOct && octaveOfMidi(notes[0]) !== target.answerOct) return false;
+    // (у открытого аккорда в выбранной октаве вторая снизу нота)
+    const octNote = (target.open && notes.length > 1) ? notes[1] : notes[0];
+    if (exactOct && octaveOfMidi(octNote) !== target.answerOct) return false;
     return true;
   }
 
@@ -4262,6 +4611,17 @@ window.EAR_TRAINER_CONFIG = {
       if (playedNotes.length >= 2) {
         const lastNote = playedNotes[playedNotes.length - 1];
         result.dir = lastNote > firstNote ? 'up' : (lastNote < firstNote ? 'down' : null);
+        if (!intervalOrderMatters()) {
+          // Порядок не важен: тоника — нижняя нота, направление не проверяется
+          const low = Math.min(firstNote, lastNote);
+          result.pc = pcOfMidi(low);
+          result.oct = octaveOfMidi(low);
+          result.dir = null;
+        } else if (result.dir === 'down') {
+          // Сыграно сверху вниз — тоника (нижняя нота) нажата второй
+          result.pc = pcOfMidi(lastNote);
+          result.oct = octaveOfMidi(lastNote);
+        }
         const rawSemis = Math.abs(lastNote - firstNote);
         // 12, 24, 36... — это октава (P8), а не унисон: приводим к простому интервалу 1..12
         const semis = (rawSemis % 12 === 0 && rawSemis > 0) ? 12 : rawSemis % 12;
@@ -4274,15 +4634,17 @@ window.EAR_TRAINER_CONFIG = {
     // Аккорды: пробуем каждую сыгранную ноту как основной тон и ищем совпадение с известным аккордом
     const pcs = uniqSorted(notes.map(pcOfMidi));
     let bestMatch = null;
-    for (const candidateRoot of pcs) {
+    // Сначала — тоника вопроса (у dim7, aug, 7b5 одни и те же ноты дают несколько тоник)
+    const rootOrder = pcs.includes(target.answerPc) ? [target.answerPc, ...pcs.filter((p) => p !== target.answerPc)] : pcs;
+    for (const candidateRoot of rootOrder) {
       const relative = uniqSorted(pcs.map((p) => ((p - candidateRoot) % 12 + 12) % 12));
       const found = CHORDS.find((c) => arraysEqual(uniqSorted(c.intervals.map((s) => s % 12)), relative));
       if (found) { bestMatch = { chord: found, root: candidateRoot }; break; }
     }
     const rootNote = notes[0];
     result.pc = bestMatch ? bestMatch.root : pcOfMidi(rootNote);
-    // Октава — по нижней сыгранной ноте аккорда
-    result.oct = octaveOfMidi(rootNote);
+    // Октава — по нижней сыгранной ноте аккорда (у открытого аккорда — по второй снизу)
+    result.oct = octaveOfMidi((target.open && notes.length > 1) ? notes[1] : rootNote);
     result.choiceId = bestMatch ? bestMatch.chord.id : null;
     if (bestMatch && INVERSION_CHORD_IDS.includes(bestMatch.chord.id)) {
       const bassRel = ((pcOfMidi(rootNote) - bestMatch.root) % 12 + 12) % 12;
@@ -4548,6 +4910,26 @@ window.EAR_TRAINER_CONFIG = {
     addMissingOctChip($('octaveAnswerRow'), 'oct', state.pendingOct, (o) => t('octShort') + ' ' + o);
   }
 
+  // Если сыгранного (неверного) обращения нет среди кнопок в окне ответа — добавляем
+  // временную красную кнопку с этим обращением (как с октавой). Пропадает при новом вопросе.
+  function addMissingInvChip(target) {
+    const row = $('inversionAnswerRow');
+    if (!row || row.style.display === 'none' || !target) return;
+    const inv = state.pendingInv;
+    if (inv === null || inv === undefined || inv === target.inversion) return;
+    const chips = [...row.querySelectorAll('.toggle-chip')];
+    if (chips.some((c) => parseInt(c.dataset.inv, 10) === inv)) return;
+    const btn = document.createElement('div');
+    btn.className = 'toggle-chip disabled incorrect missing-oct-chip';
+    btn.textContent = invLabel(inv);
+    btn.dataset.inv = inv;
+    const next = chips.find((c) => parseInt(c.dataset.inv, 10) > inv);
+    row.insertBefore(btn, next || null);
+    // Больше 4 кнопок — все в один ряд, кнопки и шрифт меньше (как обычно)
+    row.classList.toggle('inv-compact', chips.length + 1 > 4);
+    if (window.__fitAnswerHeights) window.__fitAnswerHeights();
+  }
+
   // Подсветка рядов баса после ответа: верное — зелёным, выбранное неверное — красным
   function markBassAnswerRows(target) {
     const bass = target && target.bass;
@@ -4623,7 +5005,7 @@ window.EAR_TRAINER_CONFIG = {
     const row = $('directionAnswerRow');
     const box = $('directionAnswerBox');
     if (state.mode !== 'intervals' || isNoteEntryMode()) { row.style.display = 'none'; box.style.display = 'none'; return; }
-    const dirs = getSelectedDirections();
+    const dirs = getActiveDirections();
     row.innerHTML = '';
     if (dirs.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
     row.style.display = 'flex';
@@ -4647,6 +5029,8 @@ window.EAR_TRAINER_CONFIG = {
     if (invSel.length < 2) { row.style.display = 'none'; box.style.display = 'none'; return; }
     row.style.display = 'flex';
     box.style.display = 'block';
+    // Больше 4 обращений — все в один ряд, кнопки и шрифт меньше
+    row.classList.toggle('inv-compact', invSel.length > 4);
     invSel.forEach((iv) => {
       const label = INVERSIONS.find((x) => x.i === iv).label;
       const btn = document.createElement('div');
@@ -4750,7 +5134,7 @@ window.EAR_TRAINER_CONFIG = {
     if (!target || state.mode === 'notes') return;
     if (isNoteEntryMode()) { tryFinishNoteSeqAnswer(target); return; }
     const needsOct = getSelectedOctaves().filter((o) => o >= 1 && o <= 7).length >= 2;
-    const needsDir = state.mode === 'intervals' && getSelectedDirections().length >= 2;
+    const needsDir = state.mode === 'intervals' && getActiveDirections().length >= 2;
     const needsInv = state.mode === 'chords' && getSelectedInversions().filter((iv) => iv <= maxInversionAvailable()).length >= 2;
     if (state.pendingPc === null || state.pendingChoiceId === null) return;
     if (needsOct && state.pendingOct === null) return;
@@ -4769,7 +5153,7 @@ window.EAR_TRAINER_CONFIG = {
       && state.pendingPc === target.answerPc
       && (!needsOct || state.pendingOct === target.answerOct)
       && (!needsDir || state.pendingDir === target.answerDir)
-      && (!needsInv || state.pendingInv === target.inversion);
+      && (!needsInv || !INVERSION_CHORD_IDS.includes(target.answerId) || state.pendingInv === target.inversion);
     finishAnswer(correct, target, state.pendingChoiceId);
   }
 
@@ -4799,7 +5183,7 @@ window.EAR_TRAINER_CONFIG = {
     }
 
     if (isNoteEntryMode() && state.pendingSeq.length) {
-      const expected = expectedPcSequence(target);
+      const expected = effectiveExpected(target);
       $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
         const pc = parseInt(el.dataset.pc, 10);
         el.classList.add('disabled');
@@ -4874,11 +5258,14 @@ window.EAR_TRAINER_CONFIG = {
         if (el.dataset.dir === target.answerDir) el.classList.add('correct');
         else if (state.pendingDir !== null && el.dataset.dir === state.pendingDir) el.classList.add('incorrect');
       });
+      // У аккорда без обращений выбранное обращение тоже верное
+      const rightInv = (!INVERSION_CHORD_IDS.includes(target.answerId) && state.pendingInv !== null) ? state.pendingInv : target.inversion;
       $('inversionAnswerRow').querySelectorAll('.toggle-chip').forEach((el) => {
         el.classList.add('disabled');
-        if (parseInt(el.dataset.inv, 10) === target.inversion) el.classList.add('correct');
+        if (parseInt(el.dataset.inv, 10) === rightInv) el.classList.add('correct');
         else if (state.pendingInv !== null && parseInt(el.dataset.inv, 10) === state.pendingInv) el.classList.add('incorrect');
       });
+      addMissingInvChip(target);
     }
   }
 
@@ -4971,7 +5358,7 @@ window.EAR_TRAINER_CONFIG = {
     const scale = currentScalePcs();
     const base = ((rootPc % 12) + 12) % 12;
     if (!scale.has(base)) return false;
-    const other = ((dir === 'down' ? base - semitones : base + semitones) % 12 + 12) % 12;
+    const other = ((base + semitones) % 12 + 12) % 12;
     return scale.has(other);
   }
   // Есть ли в тональности хоть одна ступень, от которой строится этот интервал
@@ -5068,7 +5455,7 @@ window.EAR_TRAINER_CONFIG = {
   function applyKeyFilterToGrids() {
     updateKeyBodyState();
     const on = isKeyFilterOn();
-    const dirs = getSelectedDirections();
+    const dirs = getActiveDirections();
     const pool = $('pool-grid');
     const rootGrid = $('root-note-grid');
 
@@ -5257,6 +5644,8 @@ window.EAR_TRAINER_CONFIG = {
         chip.className = 'toggle-chip' + (isSelected ? ' selected' : '');
         chip.textContent = c.name;
         chip.dataset.id = c.id;
+        // Новый ряд — как в Circle of Fifths
+        if (c.rowStart) chip.style.gridColumnStart = '1';
         chip.addEventListener('click', () => {
           // Последний оставшийся выбранный аккорд снять нельзя
           if (chip.classList.contains('selected') && grid.querySelectorAll('.toggle-chip.selected').length === 1) return;
@@ -5325,9 +5714,10 @@ window.EAR_TRAINER_CONFIG = {
 
   function buildChordSpreadGrid() {
     const grid = $('chord-spread-grid');
-    const saved = (settingsCache.chordSpreads && settingsCache.chordSpreads.length) ? settingsCache.chordSpreads : null;
+    const savedRaw = (settingsCache.chordSpreads || []).filter((x) => x >= 1);
+    const saved = savedRaw.length ? savedRaw : null;
     grid.querySelectorAll('.toggle-chip').forEach((chip) => {
-      const isSelected = saved ? saved.includes(parseInt(chip.dataset.spread, 10)) : chip.dataset.spread === '0';
+      const isSelected = saved ? saved.includes(parseInt(chip.dataset.spread, 10)) : chip.dataset.spread === '1';
       chip.classList.toggle('selected', isSelected);
       chip.addEventListener('click', () => {
         // Хотя бы одна ширина должна оставаться выбранной
@@ -5336,6 +5726,33 @@ window.EAR_TRAINER_CONFIG = {
         settingsChanged();
       });
     });
+  }
+
+  // Открытый аккорд
+  // «Широкий аккорд»: галка + режим «Октавы вверх» / «Открытый аккорд»
+  function isWideChordOn() { const cb = $('wideChordCheckbox'); return !!(cb && cb.checked); }
+  function getWideChordMode() {
+    const b = document.querySelector('#wideChordSegment .segment-btn.active');
+    return (b && b.dataset.widemode === 'open') ? 'open' : 'octaves';
+  }
+  function isOpenChordOn() { return isWideChordOn() && getWideChordMode() === 'open'; }
+  // Галка выключена — блок скрыт; при «Открытый аккорд» кнопки октав скрыты
+  // (размер блока при переключении не меняется, выбор октав сохраняется)
+  function updateChordSpreadAvailability() {
+    const body = $('wideChordBody');
+    if (body) body.style.display = isWideChordOn() ? '' : 'none';
+    // «Открытый аккорд»: кнопки октав скрыты, но место под ними остаётся — размер блока не меняется
+    const grid = $('chord-spread-grid');
+    const vis = getWideChordMode() === 'open' ? 'hidden' : '';
+    if (grid) grid.style.visibility = vis;
+    const title = $('chordSpreadGridTitle');
+    if (title) title.style.visibility = vis;
+  }
+  // Раскрываем аккорд по октавам. Вторая нота — в выбранной октаве, первая — октавой ниже,
+  // третья — октавой выше второй, четвёртая — на 2 октавы выше второй и т.д.
+  // Пример: C E G, окт. 4 → C3 E4 G5; C E G B → C3 E4 G5 B6; 1 обращение E G C → E3 G4 C5.
+  function openChordNotes(pc, invIntervals, oct) {
+    return invIntervals.map((s, k) => pcOctaveToMidi(((pc + s) % 12 + 12) % 12, oct + k - 1));
   }
 
   // Недоступные обращения (например 3-е у трезвучий) делаем ненажимаемыми
@@ -5399,7 +5816,13 @@ window.EAR_TRAINER_CONFIG = {
     $('onlineInstrumentSelect').addEventListener('change', (e) => { state.onlineInstrument = e.target.value; saveSettings(); });
 
     document.querySelectorAll('#langSegment .segment-btn').forEach((btn) => {
-      btn.addEventListener('click', () => { applyLanguage(btn.dataset.lang); });
+      btn.addEventListener('click', () => {
+        applyLanguage(btn.dataset.lang);
+        updateNoteGapInput();
+        // После смены языка вопрос задаётся заново
+        if (state.currentTarget) nextQuestion();
+        else updateNoteSeqInfo(t('pressNewQuestion'), false, true, true);
+      });
     });
 
     $('pianoAnswer').querySelectorAll('.toggle-chip').forEach((el) => {
@@ -5414,6 +5837,25 @@ window.EAR_TRAINER_CONFIG = {
     ['chordByNotesCheckbox'].forEach((id) => {
       const cb = $(id);
       if (cb) cb.addEventListener('change', () => { settingsChanged(); });
+    });
+
+    const wideChordCb = $('wideChordCheckbox');
+    if (wideChordCb) {
+      wideChordCb.addEventListener('change', () => {
+        settingsCache.wideChord = wideChordCb.checked;
+        updateChordSpreadAvailability();
+        settingsChanged();
+      });
+    }
+    document.querySelectorAll('#wideChordSegment .segment-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        btn.blur();
+        if (btn.classList.contains('active')) return;
+        document.querySelectorAll('#wideChordSegment .segment-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        settingsCache.wideChordMode = btn.dataset.widemode;
+        updateChordSpreadAvailability();
+        settingsChanged();
+      });
     });
 
     const keyCb = $('keyFilterCheckbox');
@@ -5464,7 +5906,7 @@ window.EAR_TRAINER_CONFIG = {
       document.querySelectorAll('#root-note-grid .toggle-chip').forEach((c) => {
         if (!c.classList.contains('out-of-key')) c.classList.add('selected');
       });
-      saveSettings();
+      settingsChanged();
     });
     $('selectNoneRoot').addEventListener('click', () => {
       document.querySelectorAll('#root-note-grid .toggle-chip').forEach((c) => {
@@ -5472,8 +5914,35 @@ window.EAR_TRAINER_CONFIG = {
         else c.classList.remove('selected');
       });
       ensureRootNoteSelection();
-      saveSettings();
+      settingsChanged();
     });
+
+    // Общий обработчик «Выбрать все»/«Снять всё» для простых сеток (без понятия тональности):
+    // при «Снять всё» один вариант (первый доступный) остаётся выбран.
+    function setupSelectAllNone(allBtnId, noneBtnId, gridId) {
+      const allBtn = $(allBtnId);
+      const noneBtn = $(noneBtnId);
+      if (!allBtn || !noneBtn) return;
+      allBtn.addEventListener('click', () => {
+        document.querySelectorAll('#' + gridId + ' .toggle-chip').forEach((c) => {
+          if (!c.classList.contains('disabled')) c.classList.add('selected');
+        });
+        settingsChanged();
+      });
+      noneBtn.addEventListener('click', () => {
+        const chips = [...document.querySelectorAll('#' + gridId + ' .toggle-chip')];
+        chips.forEach((c) => c.classList.remove('selected'));
+        const keep = chips.find((c) => !c.classList.contains('disabled')) || chips[0];
+        if (keep) keep.classList.add('selected');
+        settingsChanged();
+      });
+    }
+    setupSelectAllNone('selectAllOctave', 'selectNoneOctave', 'octave-grid');
+    setupSelectAllNone('selectAllSpread', 'selectNoneSpread', 'spread-grid');
+    setupSelectAllNone('selectAllChordSpread', 'selectNoneChordSpread', 'chord-spread-grid');
+    setupSelectAllNone('selectAllInversion', 'selectNoneInversion', 'inversion-grid');
+    setupSelectAllNone('selectAllBassOctave', 'selectNoneBassOctave', 'bass-octave-grid');
+    setupSelectAllNone('selectAllBass2Octave', 'selectNoneBass2Octave', 'bass2-octave-grid');
 
     document.querySelectorAll('#outputSegment .segment-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -5603,21 +6072,24 @@ window.EAR_TRAINER_CONFIG = {
       hideSettingsPanel();
     });
 
-    // Прокрутка колеса мыши: вниз — новый вопрос, вверх — повторить.
+    // Прокрутка колеса мыши: вниз — новый вопрос, вверх — повторить (если вопрос уже задан).
     // Любая прокрутка засчитывается как одно действие: не чаще раза в секунду,
     // независимо от того, насколько далеко прокрутили колесо.
     let lastWheelActionAt = 0;
-    const WHEEL_COOLDOWN_MS = 1000;
+    const WHEEL_COOLDOWN_MS = 1000;      // вниз — «Новый вопрос»: не чаще раза в секунду
+    const WHEEL_UP_COOLDOWN_MS = 2000;   // вверх — «Повторить»: не чаще раза в 2 секунды
     window.addEventListener('wheel', (e) => {
       // Если курсор над самой панелью настроек — просто прокручиваем её
       if (rightPanel.contains(e.target)) {
         return;
       }
       const now = Date.now();
-      if (now - lastWheelActionAt < WHEEL_COOLDOWN_MS) return;
+      const cooldown = e.deltaY < 0 ? WHEEL_UP_COOLDOWN_MS : WHEEL_COOLDOWN_MS;
+      if (now - lastWheelActionAt < cooldown) return;
       lastWheelActionAt = now;
       if (e.deltaY < 0) {
-        if (state.answered) replay();
+        // Вверх — «Повторить», если есть текущий вопрос (в т.ч. до ответа)
+        replay();
       } else if (e.deltaY > 0) {
         nextQuestion();
       }
@@ -5865,7 +6337,7 @@ window.EAR_TRAINER_CONFIG = {
     document.addEventListener('keydown', (e) => {
       if (e.code !== 'KeyY') return;
       const tag = document.activeElement ? document.activeElement.tagName : '';
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       e.preventDefault();
       if (rightPanel.classList.contains('visible')) {
         hideSettingsPanel();
@@ -5879,7 +6351,7 @@ window.EAR_TRAINER_CONFIG = {
     document.addEventListener('keydown', (e) => {
       if (e.code !== 'Space' && e.key !== ' ') return;
       const tag = document.activeElement ? document.activeElement.tagName : '';
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (state.answered) {
         e.preventDefault();
         nextQuestion();
@@ -5892,8 +6364,35 @@ window.EAR_TRAINER_CONFIG = {
       saveSettings();
     });
 
+    // После выбора в выпадающем списке снимаем с него фокус — клавиатура снова отвечает на вопросы
+    document.querySelectorAll('#right-panel select').forEach((sel) => {
+      sel.addEventListener('change', () => sel.blur());
+    });
+
+    document.querySelectorAll('#playModeSegment .segment-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.playMode = btn.dataset.playmode;
+        document.querySelectorAll('#playModeSegment .segment-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        updateDirectionAvailability();
+        settingsChanged();
+      });
+    });
+
+    $('noteGapInput').addEventListener('change', (e) => {
+      const v = parseFloat(String(e.target.value).replace(',', '.'));
+      if (isFinite(v) && v >= 0) state.noteGapSec = Math.min(10, v);
+      updateNoteGapInput();
+      saveSettings();
+    });
+
     $('connectMidiBtn').addEventListener('click', initMIDI);
-    $('midiInputSelect').addEventListener('change', attachMidiInputListener);
+    $('midiInputSelect').addEventListener('change', () => {
+      saveMidiPortChoice(MIDI_IN_SAVE_KEY, $('midiInputSelect'));
+      attachMidiInputListener();
+    });
+    $('midiOutputSelect').addEventListener('change', () => {
+      saveMidiPortChoice(MIDI_OUT_SAVE_KEY, $('midiOutputSelect'));
+    });
 
     $('minVelocityInput').addEventListener('change', (e) => {
       let v = parseInt(e.target.value, 10);
@@ -5945,6 +6444,14 @@ window.EAR_TRAINER_CONFIG = {
 
   }
 
+  // Число в поле «Интервал между нотами»: в русском интерфейсе — с запятой (0,5)
+  function updateNoteGapInput() {
+    const el = $('noteGapInput');
+    if (!el) return;
+    const txt = String(getNoteGapSec());
+    el.value = getLang() === 'ru' ? txt.replace('.', ',') : txt;
+  }
+
   function init() {
     try {
       const savedColorMode = localStorage.getItem('earTrainerColorMode');
@@ -5976,12 +6483,17 @@ window.EAR_TRAINER_CONFIG = {
     });
 
     if ($('chordByNotesCheckbox')) $('chordByNotesCheckbox').checked = settingsCache.chordByNotes !== false;
+    if ($('wideChordCheckbox')) $('wideChordCheckbox').checked = !!settingsCache.wideChord;
+    document.querySelectorAll('#wideChordSegment .segment-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.widemode === (settingsCache.wideChordMode === 'open' ? 'open' : 'octaves'));
+    });
 
     buildKeyUI();
     buildPoolGrid();
     buildDirectionGrid();
     buildSpreadGrid();
     buildChordSpreadGrid();
+    updateChordSpreadAvailability();
     buildOctaveGrid();
     buildSelects();
     ensureAllGridSelections();
@@ -6015,6 +6527,15 @@ window.EAR_TRAINER_CONFIG = {
     state.minVelocity = settingsCache.minVelocity;
     $('minVelocityInput').value = state.minVelocity;
 
+    // Режим проигрывания (за раз / по очереди) и интервал между нотами
+    state.playMode = settingsCache.playMode === 'sequential' ? 'sequential' : 'together';
+    document.querySelectorAll('#playModeSegment .segment-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.playmode === state.playMode);
+    });
+    updateDirectionAvailability();
+    state.noteGapSec = settingsCache.noteGapSec;
+    updateNoteGapInput();
+
     wireEvents();
 
     // Поля, зависящие от вывода звука и MIDI-ответа, применяем уже после wireEvents
@@ -6035,6 +6556,7 @@ window.EAR_TRAINER_CONFIG = {
       const src = icon.querySelector('.info-tip');
       if (!src) return;
       tip.textContent = src.textContent;
+      tip.classList.toggle('tip-big', src.classList.contains('tip-big'));
       tip.classList.add('visible');
 
       const iconRect = icon.getBoundingClientRect();
@@ -6062,6 +6584,8 @@ window.EAR_TRAINER_CONFIG = {
       icon.addEventListener('mouseleave', hide);
       icon.addEventListener('focus', () => show(icon));
       icon.addEventListener('blur', hide);
+      // Иконка внутри галки: нажатие показывает подсказку, но не переключает галку
+      if (icon.closest('label')) icon.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
     });
   }
 
